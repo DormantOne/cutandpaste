@@ -1,0 +1,11 @@
+<a href="#" onclick="copyText(); return false;" style="text-decoration: underline; color: blue; cursor: pointer;">Copy Text</a>
+
+<script>
+function copyText() {
+  navigator.clipboard.writeText("Wil u overlouk speling irrers eef i maak a mystake??").then(() => {
+    alert('Text copied to clipboard');
+  }).catch(err => {
+    console.error('Failed to copy text: ', err);
+  });
+}
+</script>
