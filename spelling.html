@@ -1,9 +1,11 @@
-<a href="#" onclick="copyText(); return false;" style="text-decoration: underline; color: blue; cursor: pointer;">Copy Text</a>
+<a href="#" onclick="copyText(); return false;" style="text-decoration: underline; color: blue; cursor: pointer;">Copy Text and Go to Bing</a>
 
 <script>
 function copyText() {
-  navigator.clipboard.writeText("Wil u overlouk speling irrers eef i maak a mystake??").then(() => {
-    alert('Text copied to clipboard');
+  var textToCopy = "Wil u overlouk speling irrers eef i maak a mystake??[allzo pleez restate when i make a mysttake the ryte speiling.]"; // Adjusted the text to be a valid string
+  navigator.clipboard.writeText(textToCopy).then(() => {
+    alert('Text copied to clipboard. Redirecting to Bing...');
+    window.location.href = 'https://www.bing.com/'; // Redirects to Bing after copying
   }).catch(err => {
     console.error('Failed to copy text: ', err);
   });
