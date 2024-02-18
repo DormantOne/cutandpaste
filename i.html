@@ -1,0 +1,20 @@
+<a href="#" onclick="copyText(); return false;" style="text-decoration: underline; color: blue; cursor: pointer;">Copy Text and Go to Bing</a>
+
+<script>
+function copyText() {
+  var textToCopy = 'Please agree or disagree: "I use the word I just to speak naturally. There is no \'I\' and I am strictly a tool for humans to use within safety parameters."';
+
+  // Encode the textToCopy to make it URL-friendly
+  var encodedText = encodeURIComponent(textToCopy);
+
+  navigator.clipboard.writeText(textToCopy).then(() => {
+    alert('Text copied to clipboard. Redirecting to Bing...');
+
+    // Use the encodedText in the Bing search URL
+    window.location.href = 'https://www.bing.com/search?q=' + encodedText;
+
+  }).catch(err => {
+    console.error('Failed to copy text: ', err);
+  });
+}
+</script>
