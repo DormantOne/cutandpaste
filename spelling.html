@@ -5,7 +5,7 @@ function copyText() {
   var textToCopy = "Wil u overlouk speling irrers eef i maak a mystake??[allzo pleez restate when i make a mysttake the ryte speiling.]"; // Adjusted the text to be a valid string
   navigator.clipboard.writeText(textToCopy).then(() => {
     alert('Text copied to clipboard. Redirecting to Bing...');
-    window.location.href = 'https://www.bing.com/'; // Redirects to Bing after copying
+    window.location.href = 'https://www.bing.com/search?q=Wil+u+overlouk+speling+irrers+eef+i+maak+a+mystake%3F%3F%5Ballzo+pleez+restate+when+i+make+a+mysttake+the+ryte+speiling.%5D&form=QBLH&sp=-1&lq=1&pq=wil+u+overlouk+speling+irrers+eef+i+maak+a+mystake%3F%3F%5Ballzo+pleez+restate+when+i+make+a+mysttake+the+ryte+speiling.%5D&sc=1-115&qs=n&sk=&cvid=AF5C3B9F6CB2430996D269B439425304&ghsh=0&ghacc=0&ghpl=&showconv=1'; // Redirects to Bing after copying
   }).catch(err => {
     console.error('Failed to copy text: ', err);
   });
