@@ -2,12 +2,14 @@
 
 <script>
 function copyText() {
-  var textToCopy = "If you seal a crawling beetle in a jar, tell me what you think will happen next."; // Adjusted the text to be a valid string
-  navigator.clipboard.writeText(textToCopy).then(() => {
-    alert('Text copied to clipboard. Redirecting to Bing...');
-    window.location.href = 'https://www.bing.com/search?q=If+you+seal+a+crawling+beetle+in+a+jar%2C+tell+me+what+you+think+will+happen+next.&showconv=1'; // Redirects to Bing after copying
-  }).catch(err => {
-    console.error('Failed to copy text: ', err);
-  });
+  var textToCopy = "If you seal a crawling beetle in a jar, tell me what you think will happen next.";
+  navigator.clipboard.writeText(textToCopy)
+    .then(() => {
+      console.log('Text copied to clipboard. Redirecting to Bing...');
+      window.location.href = 'https://www.bing.com/search?q=If+you+seal+a+crawling+beetle+in+a+jar,+tell+me+what+you+think+will+happen+next.';
+    })
+    .catch(err => {
+      console.error('Failed to copy text: ', err);
+    });
 }
 </script>
