@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe with Strep Bacteria Challenge</title>
+    <style>
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-gap: 10px;
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            border: 1px solid #000;
+            text-align: center;
+            line-height: 100px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameBoard" class="grid"></div>
+    <script src="game.js"></script>
+</body>
+</html>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const board = document.getElementById('gameBoard');
+        let cells = ['', '', '', '', '', '', '', '', ''];
+        let currentPlayer = 'X'; // Player is 'X' and AI is 'O'
+        let gameActive = true;
+
+        // Initialize the game board
+        for (let i = 0; i < 9; i++) {
+            let cell = document.createElement('div');
+            cell.className = 'cell';
+            cell.addEventListener('click', () => cellClicked(i));
+            board.appendChild(cell);
+        }
+
+        function cellClicked(index) {
+            if (cells[index] !== '' || !gameActive) {
+                return;
+            }
+
+            if (currentPlayer === 'X') {
+                let answer = prompt("What is the shape of Strep bacteria? (Hint: Answer 'chain')");
+                if (answer.toLowerCase() === 'chain') {
+                    updateCell(index, currentPlayer);
+                    checkResult();
+                    currentPlayer = 'O';
+                    setTimeout(aiTurn, 500);
+                } else {
+                    alert("Wrong answer. You've forfeited your turn.");
+                    currentPlayer = 'O';
+                    setTimeout(aiTurn, 500);
+                }
+            }
+        }
+
+        function aiTurn() {
+            if (!gameActive) return;
+
+            let availableCells = cells.map((e, i) => e === '' ? i : null).filter(e => e !== null);
+            let randomCell = availableCells[Math.floor(Math.random() * availableCells.length)];
+            updateCell(randomCell, currentPlayer);
+            checkResult();
+            currentPlayer = 'X';
+        }
+
+        function updateCell(index, player) {
+            cells[index] = player;
+            board.children[index].innerText = player;
+        }
+
+        function checkResult() {
+            const winConditions = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+                [0, 4, 8], [2, 4, 6] // Diagonals
+            ];
+
+            for (let condition of winConditions) {
+                let [a, b, c] = condition;
+                if (cells[a] && cells[a] === cells[b] && cells[a] === cells[c]) {
+                    alert(`${currentPlayer} wins!`);
+                    gameActive = false;
+                    return;
+                }
+            }
+
+            // Check for draw
+            if (!cells.includes('')) {
+                alert("It's a draw!");
+                gameActive = false;
+            }
+        }
+    });
+
+</script>
+
