@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CHF Data Entry with Floating Dialog Box</title>
+    <style>
+        #dialogBox {
+            display: none;
+            border: 1px solid #000;
+            padding: 10px;
+            background-color: white;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        #backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        textarea {
+            width: 90%;
+            padding: 10px;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="backdrop"></div>
+    <textarea id="textInput" placeholder="Type here..." rows="10" cols="50"></textarea>
+    <div id="dialogBox">
+        <form id="chfForm">
+            <label><input type="radio" name="acuteChronic" value="Acute"> Acute</label>
+            <label><input type="radio" name="acuteChronic" value="Acute on Chronic"> Acute on Chronic</label><br>
+            <label><input type="radio" name="ef" value="EF > 50%"> EF > 50% (diastolic failure)</label>
+            <label><input type="radio" name="ef" value="EF < 50%"> EF < 50% (systolic failure)</label><br>
+            <input type="text" name="likelyCause" placeholder="Likely Cause"><br>
+            <input type="text" name="cxr" placeholder="CXR"><br>
+            <button type="button" onclick="submitCHF()">Submit</button>
+        </form>
+        <!-- GDMT Education Content -->
+        <div id="gdmtEducation">
+            <h3>GDMT Education</h3>
+            <p id="gdmtSystolic" style="display: none;">HFrEF Treatment: Entresto, Beta-blockers (Carvedilol, Metoprolol, Bisoprolol), Aldactone, Hydralazine/Nitrates, SGLT2 inhibitors.</p>
+            <p id="gdmtDiastolic" style="display: none;">HFpEF Treatment: Diuretics for volume management, blood pressure control, management of comorbidities.</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var efRadioButtons = document.querySelectorAll('input[name="ef"]');
+            efRadioButtons.forEach(function (btn) {
+                btn.addEventListener('change', function () {
+                    displayGDMEducation(this.value);
+                });
+            });
+        });
+
+        document.getElementById('textInput').addEventListener('input', function (e) {
+            var inputValue = e.target.value;
+            var words = inputValue.split(/[\s\n]+/); // Split by spaces and newline characters
+            var lastWord = words.pop(); // Get the last word
+
+            if (inputValue.endsWith(',chf') && !isDialogOpen()) {
+                showCHFDialog();
+            } else if (lastWord.startsWith('.')) {
+                handleDotPhrases(inputValue, lastWord);
+            }
+        });
+
+        function handleDotPhrases(inputValue, lastWord) {
+            var dotPhrases = {
+                '.chf': `Acute CHF:\n\n- Acute vs acute on chronic\n\n- EF > 50% (diastolic failure) or <50% (systolic failure)\n\n- Likely cause:\n\n- CXR:\n\n- TTE within 2 years:\n\n- Home diuretics:\n\n- Started on IV diuretics:\n\n- Monitor daily I&O's, daily weights, Cr:\n\n- Cardiology c/s:`,
+                // ... other dot phrases
+            };
+
+            if (dotPhrases[lastWord]) {
+                replaceLastWord(inputValue, lastWord, dotPhrases[lastWord]);
+            }
+        }
+
+        function isDialogOpen() {
+            return document.getElementById('dialogBox').style.display === 'block';
+        }
+
+        function showCHFDialog() {
+            document.getElementById('dialogBox').style.display = 'block';
+            document.getElementById('backdrop').style.display = 'block';
+        }
+
+        function replaceLastWord(inputValue, key, replacementText) {
+            let newText = inputValue.substring(0, inputValue.lastIndexOf(key)) + replacementText;
+            document.getElementById('textInput').value = newText;
+        }
+
+        function submitCHF() {
+            var form = document.getElementById('chfForm');
+            var formData = new FormData(form);
+            var text = `Acute CHF:\n\n`;
+
+            text += `- ${formData.get("acuteChronic")}\n`;
+            text += `- ${formData.get("ef")}\n`;
+            text += `- Likely cause: ${formData.get("likelyCause")}\n`;
+            text += `- CXR: ${formData.get("cxr")}\n`;
+
+            document.getElementById('textInput').value += `\n${text}`;
+            closeCHFDialog();
+        }
+
+        function displayGDMEducation(ef) {
+            document.getElementById('gdmtSystolic').style.display = 'none';
+            document.getElementById('gdmtDiastolic').style.display = 'none';
+
+            if (ef === "EF > 50%") {
+                document.getElementById('gdmtDiastolic').style.display = 'block';
+            } else if (ef === "EF < 50%") {
+                document.getElementById('gdmtSystolic').style.display = 'block';
+            }
+        }
+
+        function closeCHFDialog() {
+            document.getElementById('dialogBox').style.display = 'none';
+            document.getElementById('backdrop').style.display = 'none';
+            document.getElementById('chfForm').reset();
+            document.getElementById('gdmtSystolic').style.display = 'none';
+            document.getElementById('gdmtDiastolic').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
