@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Auto Copy Text on Load</title>
+    <script>
+        window.onload = function () {
+            var blockOfText = `Preventive Percutaneous Coronary Intervention versus Optimal Medical Therapy Alone for the Treatment of Vulnerable Atherosclerotic Coronary Plaques (PREVENT): A Multicentre, Open-Label, Randomised Controlled Trial
+
+Authors: Prof Seung-Jung Park, MD; Jung-Min Ahn, MD; Do-Yoon Kang, MD; Sung-Cheol Yun, PhD; Prof Young-Keun Ahn, MD; Won-Jang Kim, MD; et al.
+
+Summary:
+
+Background
+Acute coronary syndrome and sudden cardiac death are often caused by rupture and thrombosis of lipid-rich atherosclerotic coronary plaques (known as vulnerable plaques), many of which are non-flow-limiting. The safety and effectiveness of focal preventive therapy with percutaneous coronary intervention of vulnerable plaques in reducing adverse cardiac events are unknown. We aimed to assess whether preventive percutaneous coronary intervention of non-flow-limiting vulnerable plaques improves clinical outcomes compared with optimal medical therapy alone.
+
+Methods
+PREVENT was a multicentre, open-label, randomised controlled trial done at 15 research hospitals in four countries (South Korea, Japan, Taiwan, and New Zealand). Patients aged 18 years or older with non-flow-limiting (fractional flow reserve >0.80) vulnerable coronary plaques identified by intracoronary imaging were randomly assigned (1:1) to either percutaneous coronary intervention plus optimal medical therapy or optimal medical therapy alone, in block sizes of 4 or 6, stratified by diabetes status and the performance of percutaneous coronary intervention in a non-study target vessel. Follow-up continued annually in all enrolled patients until the last enrolled patient reached 2 years after randomisation. The primary outcome was a composite of death from cardiac causes, target-vessel myocardial infarction, ischaemia-driven target-vessel revascularisation, or hospitalisation for unstable or progressive angina, assessed in the intention-to-treat population at 2 years. Time-to-first-event estimates were calculated with the Kaplan–Meier method and were compared with the log-rank test. This report is the principal analysis from the trial and includes all long-term analysed data. The trial is registered at ClinicalTrials.gov, NCT02316886, and is complete.
+
+Findings
+Between Sept 23, 2015, and Sept 29, 2021, 5627 patients were screened for eligibility, 1606 of whom were enrolled and randomly assigned to percutaneous coronary intervention (n=803) or optimal medical therapy alone (n=803). 1177 (73%) patients were men and 429 (27%) were women. 2-year follow-up for the primary outcome assessment was completed in 1556 (97%) patients (percutaneous coronary intervention group n=780; optimal medical therapy group n=776). At 2 years, the primary outcome occurred in three (0.4%) patients in the percutaneous coronary intervention group and in 27 (3.4%) patients in the medical therapy group (absolute difference –3.0 percentage points [95% CI –4.4 to –1.8]; p=0.0003). The effect of preventive percutaneous coronary intervention was directionally consistent for each component of the primary composite outcome. Serious clinical or adverse events did not differ between the percutaneous coronary intervention group and the medical therapy group: at 2 years, four (0.5%) versus ten (1.3%) patients died (absolute difference –0.8 percentage points [95% CI –1.7 to 0.2]) and nine (1.1%) versus 13 (1.7%) patients had myocardial infarction (absolute difference –0.5 percentage points [–1.7 to 0.6]).
+
+Interpretation
+In patients with non-flow-limiting vulnerable coronary plaques, preventive percutaneous coronary intervention reduced major adverse cardiac events arising from high-risk vulnerable plaques, compared with optimal medical therapy alone. Given that PREVENT is the first large trial to show the potential effect of the focal treatment for vulnerable plaques, these findings support consideration to expand indications for percutaneous coronary intervention to include non-flow-limiting, high-risk vulnerable plaques.`;  // Multiline text stored using template literals
+
+            // Convert multiline text to a single line by replacing newlines with spaces
+            var textToCopy = blockOfText.replace(/\n/g, ' ');
+
+            navigator.clipboard.writeText(textToCopy)
+                .then(() => {
+                    alert("Text copied to clipboard: " + textToCopy);
+                })
+                .catch(err => {
+                    console.error('Failed to copy text: ', err);
+                    alert('Failed to copy text: ' + err);
+                });
+        };
+    </script>
+</head>
+<body>
+<h1>grand rounds paper now on your clipboard - if you approved</h1>
+<p>Use one of the following AI chatbots to discuss paper with you:</p>
+    <p>you have to paste it in of course - but it it is on your clipboard now to paste in</p>
+<ul>
+    <li><a href="https://www.bing.com/chat" target="_blank">Microsoft Copilot</a></li><br>
+    <li><a href="https://chat.openai.com/" target="_blank">ChatGPT by OpenAI</a></li><br>
+    <li><a href="https://claude.ai/" target="_blank">Claude by Anthropic</a></li><br>
+    <li><a href="https://gemini.google.com/" target="_blank">Gemini</a></li> <!-- Note: Replace this with the correct URL for Gemini if it's an AI service -->
+</ul>
+</body>
+</html>
