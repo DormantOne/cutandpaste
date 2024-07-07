@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Embedding to Softmax Visualization</title>
+    <title>3D Cube with Embedded Words</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -13,151 +13,151 @@
             justify-content: center;
             height: 100vh;
             margin: 0;
-            background-color: #f4f4f4;
+            background-color: #222;
+            color: white;
         }
-        .container {
-            width: 800px;
-            background-color: #fff;
-            padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
+        #container {
+            width: 600px;
+            height: 600px;
+            background-color: #000;
         }
-        .embedding-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-gap: 10px;
-            margin-bottom: 20px;
-        }
-        .embedding-cell {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid #ccc;
-            padding: 10px;
-            border-radius: 4px;
-            background-color: #f9f9f9;
-        }
-        .embedding-cell span {
-            font-size: 14px;
-        }
-        .softmax-visualization {
+        .controls {
             margin-top: 20px;
+            padding: 10px;
+            background-color: #333;
+            border-radius: 10px;
+            width: 600px;
         }
-        .softmax-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .softmax-bar {
-            height: 20px;
-            background-color: #4CAF50;
-            margin-left: 10px;
-            transition: width 0.3s ease;
-        }
-        .details {
-            margin-left: 10px;
-            font-size: 12px;
-            color: #666;
+        .slider {
+            width: 100%;
+            margin: 10px 0;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Embedding to Softmax Visualization</h1>
-        <div class="embedding-grid" id="embedding-grid">
-            <!-- Embedding cells will be generated here -->
+    <h1>3D Cube with Embedded Words</h1>
+    <div id="container"></div>
+    <div class="controls">
+        <div>
+            <label for="xRange">X: </label>
+            <input type="range" id="xRange" class="slider" min="-1.35" max="1.35" step="0.01" value="0">
+            <span id="xValue">0</span>
         </div>
-        <button onclick="calculateSoftmax()">Calculate Softmax</button>
-        <div class="softmax-visualization" id="softmax-visualization">
-            <h3>Softmax Output</h3>
-            <div id="softmax-items"></div>
+        <div>
+            <label for="yRange">Y: </label>
+            <input type="range" id="yRange" class="slider" min="-1.35" max="1.35" step="0.01" value="0">
+            <span id="yValue">0</span>
+        </div>
+        <div>
+            <label for="zRange">Z: </label>
+            <input type="range" id="zRange" class="slider" min="-1.35" max="1.35" step="0.01" value="0">
+            <span id="zValue">0</span>
         </div>
     </div>
-
+    <div id="output" style="margin-top: 20px;"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script>
-        const embeddings = {
-            "the": [0.1, 0.2, 0.3],
-            "cat": [0.2, 0.1, 0.4],
-            "sat": [0.3, 0.3, 0.3],
-            "on": [0.4, 0.1, 0.1],
-            "mat": [0.5, 0.2, 0.2],
-            "fat": [0.2, 0.5, 0.1],
-            "dog": [0.1, 0.3, 0.2],
-            "run": [0.3, 0.2, 0.5],
-            "bark": [0.2, 0.4, 0.1]
+        // Initialize the scene
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, 600 / 600, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(600, 600);
+        renderer.setClearColor(0x222222, 1); // Set background color of the canvas
+        document.getElementById('container').appendChild(renderer.domElement);
+
+        // Create the larger cube (35% bigger)
+        const geometry = new THREE.BoxGeometry(2.7, 2.7, 2.7);
+        const material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+        const cube = new THREE.Mesh(geometry, material);
+        scene.add(cube);
+
+        // Define words and their positions inside the cube
+        const words = {
+            'Cat': new THREE.Vector3(0.675, 0.675, 0.675),
+            'Dog': new THREE.Vector3(-0.675, -0.675, -0.675),
+            'Fish': new THREE.Vector3(0.675, -0.675, -0.675)
         };
 
-        const vocabulary = ["the", "cat", "sat", "on", "mat", "fat", "dog", "run", "bark"];
-        
-        // Random weights and biases for 3 output neurons
-        const weights = [
-            [0.5, 0.3, 0.2],
-            [0.2, 0.1, 0.7],
-            [0.1, 0.4, 0.5]
-        ];
-        const biases = [0.1, 0.2, 0.3];
-
-        function softmax(arr) {
-            const expScores = arr.map(val => Math.exp(val));
-            const sumExpScores = expScores.reduce((sum, val) => sum + val, 0);
-            return expScores.map(val => val / sumExpScores);
+        // Add words as sprites to the scene with coordinates
+        for (const [word, position] of Object.entries(words)) {
+            const spriteMaterial = new THREE.SpriteMaterial({ map: createTextTexture(`${word} (${position.x.toFixed(2)}, ${position.y.toFixed(2)}, ${position.z.toFixed(2)})`) });
+            const sprite = new THREE.Sprite(spriteMaterial);
+            sprite.position.copy(position);
+            scene.add(sprite);
         }
 
-        function createEmbeddingGrid() {
-            const embeddingGrid = document.getElementById('embedding-grid');
-            vocabulary.forEach(word => {
-                const cell = document.createElement('div');
-                cell.className = 'embedding-cell';
-                cell.innerHTML = `
-                    <span><strong>${word}</strong></span>
-                    <span>(${embeddings[word].join(', ')})</span>
-                `;
-                embeddingGrid.appendChild(cell);
+        function createTextTexture(text) {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            context.font = '24px Arial';
+            context.fillStyle = 'white';
+            context.fillText(text, 0, 24);
+            const texture = new THREE.CanvasTexture(canvas);
+            return texture;
+        }
+
+        // Create the undefined word point
+        const undefinedMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+        const undefinedGeometry = new THREE.SphereGeometry(0.1, 32, 32);
+        const undefinedPoint = new THREE.Mesh(undefinedGeometry, undefinedMaterial);
+        scene.add(undefinedPoint);
+
+        // Camera position
+        camera.position.z = 5;
+
+        // Mouse controls
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+        function softmax(x) {
+            const max = Math.max(...x);
+            const exps = x.map(i => Math.exp(i - max));
+            const sumExps = exps.reduce((a, b) => a + b, 0);
+            return exps.map(i => i / sumExps);
+        }
+
+        function updateVisualization() {
+            const x = parseFloat(document.getElementById('xRange').value);
+            const y = parseFloat(document.getElementById('yRange').value);
+            const z = parseFloat(document.getElementById('zRange').value);
+            document.getElementById('xValue').innerText = x.toFixed(2);
+            document.getElementById('yValue').innerText = y.toFixed(2);
+            document.getElementById('zValue').innerText = z.toFixed(2);
+
+            const inputCoords = new THREE.Vector3(x, y, z);
+            undefinedPoint.position.copy(inputCoords);
+
+            const logits = Object.values(words).map(coord => coord.dot(inputCoords));
+            const expValues = logits.map(val => Math.exp(val - Math.max(...logits)));
+            const sumExpValues = expValues.reduce((a, b) => a + b, 0);
+            const probabilities = expValues.map(val => val / sumExpValues);
+
+            const outputDiv = document.getElementById('output');
+            outputDiv.innerHTML = `Input Coordinates: [${x.toFixed(2)}, ${y.toFixed(2)}, ${z.toFixed(2)}]<br>`;
+            outputDiv.innerHTML += `Logits: [${logits.map(n => n.toFixed(2)).join(', ')}]<br>`;
+            outputDiv.innerHTML += `Exponentiated Values: [${expValues.map(n => n.toFixed(2)).join(', ')}]<br>`;
+            outputDiv.innerHTML += `Sum of Exponentiated Values: ${sumExpValues.toFixed(2)}<br>`;
+            outputDiv.innerHTML += `Softmax Probabilities: [${probabilities.map(n => n.toFixed(2)).join(', ')}]<br>`;
+
+            const bestWord = Object.keys(words)[probabilities.indexOf(Math.max(...probabilities))];
+            outputDiv.innerHTML += `The closest word based on softmax probabilities is: ${bestWord}<br>`;
+
+            outputDiv.innerHTML += `<br><strong>Softmax Probability for Each Word:</strong><br>`;
+            Object.keys(words).forEach((word, index) => {
+                outputDiv.innerHTML += `${word}: ${probabilities[index].toFixed(2)}<br>`;
             });
         }
 
-        function calculateLogits() {
-            return vocabulary.map((word) => 
-                weights.map((weight, neuronIndex) =>
-                    embeddings[word].reduce((sum, val, j) => sum + val * weight[j], biases[neuronIndex])
-                )
-            );
+        document.querySelectorAll('.slider').forEach(slider => slider.addEventListener('input', updateVisualization));
+        updateVisualization();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
         }
 
-        function calculateSoftmax() {
-            const logits = calculateLogits();
-            const softmaxValues = logits.map(logit => softmax(logit));
-            displaySoftmax(vocabulary, logits, softmaxValues);
-        }
-
-        function displaySoftmax(vocabulary, logits, softmaxValues) {
-            const softmaxItems = document.getElementById('softmax-items');
-            softmaxItems.innerHTML = '';
-            logits.forEach((logitArray, wordIndex) => {
-                logitArray.forEach((logit, neuronIndex) => {
-                    const probability = softmaxValues[wordIndex][neuronIndex];
-                    const expScore = Math.exp(logit);
-                    const sumExpScores = logitArray.reduce((sum, l) => sum + Math.exp(l), 0);
-                    const div = document.createElement('div');
-                    div.className = 'softmax-item';
-                    div.innerHTML = `
-                        <span>${vocabulary[wordIndex]} (Neuron ${neuronIndex + 1}, Logit: ${logit.toFixed(2)}):</span>
-                        <div style="width: ${probability * 100}%" class="softmax-bar"></div>
-                        <span>${probability.toFixed(2)}</span>
-                        <div class="details">
-                            <div>e^${logit.toFixed(2)} = ${expScore.toFixed(2)}</div>
-                            <div>Sum of Exponentials = ${sumExpScores.toFixed(2)}</div>
-                            <div>Probability = ${probability.toFixed(2)}</div>
-                        </div>
-                    `;
-                    softmaxItems.appendChild(div);
-                });
-            });
-        }
-
-        // Initialize the embedding grid on page load
-        createEmbeddingGrid();
+        animate();
     </script>
 </body>
 </html>
