@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Transformer Visualization</title>
+    <style>
+        body {
+            position: relative;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+        .container {
+            flex: 1;
+        }
+        .layer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 40px; /* Increased margin to separate layers */
+            position: relative;
+        }
+        .neuron {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 20px; /* Increased margin to separate neurons */
+            cursor: pointer;
+            position: relative;
+        }
+        .neuron-info {
+            display: none;
+            position: absolute;
+            background: #fff;
+            border: 1px solid #000;
+            padding: 10px;
+            top: 60px;
+            left: -10px;
+            z-index: 1;
+            white-space: nowrap;
+        }
+        .neuron:hover .neuron-info {
+            display: block;
+        }
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+        .details-canvas {
+            flex: 1;
+            border-left: 2px solid #000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .embedding-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 50px);
+            grid-template-rows: repeat(3, 50px);
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+        .embedding-cell {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Simple Transformer Visualization</h1>
+        <p>Input Sentence: <input type="text" id="input-sentence" value="the cat sat on the"></p>
+        <!-- Input Layer -->
+        <div class="layer" id="input-layer"></div>
+        <!-- Attention Layer -->
+        <div class="layer" id="attention-layer"></div>
+        <!-- Hidden Layers -->
+        <div class="layer" id="hidden-layer-1"></div>
+        <div class="layer" id="hidden-layer-2"></div>
+        <!-- Output Layer -->
+        <div class="layer" id="output-layer"></div>
+        <canvas id="canvas" width="1200" height="1000"></canvas>
+    </div>
+    <div class="details-canvas" id="details-canvas">
+        <h2>Details</h2>
+        <div id="details-content">Click on a neuron to see the details</div>
+        <div class="embedding-grid">
+            <div class="embedding-cell">the (0,0)</div>
+            <div class="embedding-cell">cat (1,0)</div>
+            <div class="embedding-cell">sat (2,0)</div>
+            <div class="embedding-cell">on (0,1)</div>
+            <div class="embedding-cell">mat (1,1)</div>
+            <div class="embedding-cell">fat (2,1)</div>
+            <div class="embedding-cell">dog (0,2)</div>
+            <div class="embedding-cell">run (1,2)</div>
+            <div class="embedding-cell">bark (2,2)</div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const words = ["the", "cat", "sat", "on", "the"];
+            
+            // Simple embeddings (random values for demonstration)
+            const embeddings = {
+                "the": [0.1, 0.2, 0.7],
+                "cat": [0.3, 0.4, 0.8],
+                "sat": [0.5, 0.6, 0.9],
+                "on": [0.7, 0.8, 1.0],
+                "the": [0.1, 0.2, 0.7]
+            };
+
+            const vocabulary = ["the", "cat", "sat", "on", "mat", "fat", "dog", "run", "bark"];
+
+            function calculateAttention(sentence, embeddings) {
+                const words = sentence.split(" ");
+                const attentionWeights = [];
+                for (let i = 0; i < words.length; i++) {
+                    const row = [];
+                    for (let j = 0; j < words.length; j++) {
+                        if (embeddings[words[i]] && embeddings[words[j]]) {
+                            const weight = embeddings[words[i]].reduce((sum, val, index) => sum + val * embeddings[words[j]][index], 0);
+                            row.push(weight.toFixed(2));
+                        } else {
+                            row.push("0.00");
+                        }
+                    }
+                    attentionWeights.push(row);
+                }
+                return attentionWeights;
+            }
+
+            function softmax(arr) {
+                const expScores = arr.map(val => Math.exp(val));
+                const sumExpScores = expScores.reduce((sum, val) => sum + val, 0);
+                return expScores.map(val => val / sumExpScores);
+            }
+
+            function displayLayers(layers) {
+                layers.forEach((layer, layerIndex) => {
+                    const layerDiv = document.getElementById(layer.id);
+                    layerDiv.innerHTML = "";
+                    layer.neurons.forEach((neuron, neuronIndex) => {
+                        const neuronDiv = document.createElement("div");
+                        neuronDiv.className = "neuron";
+                        neuronDiv.dataset.layer = layerIndex;
+                        neuronDiv.dataset.neuron = neuronIndex;
+                        neuronDiv.dataset.info = JSON.stringify(neuron.info);
+                        neuronDiv.style.borderColor = layer.color;
+                        neuronDiv.innerHTML = `${neuron.label}<div class="neuron-info">${neuron.info.summary}</div>`;
+                        neuronDiv.onclick = () => showDetails(neuron.info);
+                        layerDiv.appendChild(neuronDiv);
+                    });
+                });
+            }
+
+            function drawConnections(connections) {
+                const canvas = document.getElementById("canvas");
+                const ctx = canvas.getContext("2d");
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                connections.forEach(connection => {
+                    const start = document.querySelector(`.neuron[data-layer="${connection.startLayer}"][data-neuron="${connection.startNeuron}"]`);
+                    const end = document.querySelector(`.neuron[data-layer="${connection.endLayer}"][data-neuron="${connection.endNeuron}"]`);
+                    const startRect = start.getBoundingClientRect();
+                    const endRect = end.getBoundingClientRect();
+                    const startX = startRect.left + startRect.width / 2 + window.scrollX;
+                    const startY = startRect.top + startRect.height / 2 + window.scrollY;
+                    const endX = endRect.left + endRect.width / 2 + window.scrollX;
+                    const endY = endRect.top + endRect.height / 2 + window.scrollY;
+                    ctx.beginPath();
+                    ctx.moveTo(startX, startY);
+                    ctx.lineTo(endX, endY);
+                    ctx.strokeStyle = connection.color;
+                    ctx.stroke();
+                });
+            }
+
+            function showDetails(info) {
+                const detailsContent = document.getElementById('details-content');
+                detailsContent.innerHTML = `
+                    <h3>${info.label}</h3>
+                    <p>${info.description}</p>
+                    <pre>${JSON.stringify(info.values, null, 2)}</pre>
+                    <canvas id="details-canvas" width="400" height="300"></canvas>
+                    <div id="math-details">${info.math}</div>
+                `;
+                if (info.visual) {
+                    const detailsCanvas = document.getElementById('details-canvas');
+                    const ctx = detailsCanvas.getContext("2d");
+                    info.visual(ctx);
+                }
+            }
+
+            function generateVisual(values, ctx) {
+                // Example visual representation for neuron processing
+                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                ctx.font = '14px Arial';
+                ctx.fillText('Input Values:', 10, 20);
+                values.input.forEach((val, index) => {
+                    ctx.fillText(`x${index + 1} = ${val}`, 10, 40 + index * 20);
+                });
+                ctx.fillText('Weights:', 10, 80);
+                values.weights.forEach((val, index) => {
+                    ctx.fillText(`w${index + 1} = ${val}`, 10, 100 + index * 20);
+                });
+                ctx.fillText('Bias:', 10, 140);
+                ctx.fillText(`b = ${values.bias}`, 10, 160);
+                ctx.fillText('Output:', 10, 180);
+                ctx.fillText(`y = ${values.output}`, 10, 200);
+            }
+
+            window.calculateAndDisplayAttention = function() {
+                const inputSentence = document.getElementById("input-sentence").value;
+                const attentionWeights = calculateAttention(inputSentence, embeddings);
+
+                const layers = [
+                    {
+                        id: "input-layer",
+                        color: "#FF0000",
+                        neurons: words.map((word, index) => ({
+                            label: word,
+                            info: {
+                                label: `Input Neuron ${index + 1}`,
+                                summary: `Input Word: ${word}<br>Embedding: ${embeddings[word].join(", ")}`,
+                                description: `This neuron represents the input word "${word}" with its embedding values.`,
+                                values: { input: embeddings[word], weights: [], bias: 0, output: embeddings[word] },
+                                visual: (ctx) => generateVisual({ input: embeddings[word], weights: [], bias: 0, output: embeddings[word] }, ctx)
+                            }
+                        }))
+                    },
+                    {
+                        id: "attention-layer",
+                        color: "#00FF00",
+                        neurons: attentionWeights.map((weights, index) => {
+                            const inputValues = embeddings[words[index]];
+                            const keys = words.map(word => embeddings[word]);
+                            const queries = inputValues;
+                            const values = words.map(word => embeddings[word]);
+                            const attentionScores = keys.map(key => key.reduce((sum, val, i) => sum + val * queries[i], 0));
+                            const softmaxScores = softmax(attentionScores);
+                            const output = softmaxScores.map((score, i) => score * values[i].reduce((sum, val) => sum + val, 0)).reduce((sum, val) => sum + val, 0);
+                            return {
+                                label: `A${index + 1}`,
+                                info: {
+                                    label: `Attention Neuron ${index + 1}`,
+                                    summary: `Attention Node: A${index + 1}<br>Attention Weights: ${weights.join(", ")}`,
+                                    description: `This neuron calculates the importance of each word relative to the others using the dot product of embeddings and applies softmax normalization.`,
+                                    values: { input: inputValues, keys, queries, values, attentionScores, softmaxScores, output },
+                                    visual: (ctx) => {
+                                        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                                        ctx.font = '14px Arial';
+                                        ctx.fillText('Query:', 10, 20);
+                                        ctx.fillText(`Q = ${inputValues.join(", ")}`, 10, 40);
+                                        ctx.fillText('Keys:', 10, 60);
+                                        keys.forEach((key, i) => {
+                                            ctx.fillText(`K${i + 1} = ${key.join(", ")}`, 10, 80 + i * 20);
+                                        });
+                                        ctx.fillText('Attention Scores:', 10, 200);
+                                        attentionScores.forEach((score, i) => {
+                                            ctx.fillText(`Score${i + 1} = ${score.toFixed(2)}`, 10, 220 + i * 20);
+                                        });
+                                        ctx.fillText('Softmax Scores:', 10, 280);
+                                        softmaxScores.forEach((score, i) => {
+                                            ctx.fillText(`Softmax${i + 1} = ${score.toFixed(2)}`, 10, 300 + i * 20);
+                                        });
+                                        ctx.fillText('Output:', 10, 360);
+                                        ctx.fillText(`y = ${output.toFixed(2)}`, 10, 380);
+                                    },
+                                    math: `
+                                        <h3>Mathematical Process</h3>
+                                        <p><strong>Query (Q):</strong> [${queries.join(", ")}]</p>
+                                        <p>For each key (K):</p>
+                                        ${keys.map((key, i) => `
+                                            <p>K${i + 1} = [${key.join(", ")}]</p>
+                                            <p>Dot product Q·K${i + 1} = ${attentionScores[i].toFixed(2)}</p>
+                                        `).join('')}
+                                        <p><strong>Attention Scores:</strong> [${attentionScores.map(score => score.toFixed(2)).join(", ")}]</p>
+                                        <p><strong>Softmax Scores:</strong> [${softmaxScores.map(score => score.toFixed(2)).join(", ")}]</p>
+                                        <p>Output = Weighted sum of values (V):</p>
+                                        ${values.map((value, i) => `
+                                            <p>V${i + 1} = [${value.join(", ")}]</p>
+                                            <p>Softmax${i + 1} * V${i + 1} = ${softmaxScores[i].toFixed(2)} * [${value.join(", ")}]</p>
+                                        `).join('')}
+                                        <p><strong>Final Output:</strong> ${output.toFixed(2)}</p>
+                                    `
+                                }
+                            };
+                        })
+                    },
+                    {
+                        id: "hidden-layer-1",
+                        color: "#0000FF",
+                        neurons: attentionWeights.map((_, index) => {
+                            const inputValues = attentionWeights[index].map(Number);
+                            const weights = inputValues.map(() => Math.random());
+                            const bias = Math.random();
+                            const output = inputValues.reduce((sum, val, i) => sum + val * weights[i], bias);
+                            return {
+                                label: `H1${index + 1}`,
+                                info: {
+                                    label: `Hidden Layer 1 Neuron ${index + 1}`,
+                                    summary: `This neuron applies a linear transformation followed by a ReLU activation function.`,
+                                    description: `Receives the weighted sums from the attention layer and applies: ReLU(W1 * input + b1).`,
+                                    values: { input: inputValues, weights, bias, output: Math.max(0, output) },
+                                    visual: (ctx) => generateVisual({ input: inputValues, weights, bias, output: Math.max(0, output) }, ctx)
+                                }
+                            };
+                        })
+                    },
+                    {
+                        id: "hidden-layer-2",
+                        color: "#FFFF00",
+                        neurons: attentionWeights.map((_, index) => {
+                            const inputValues = attentionWeights[index].map(Number);
+                            const weights = inputValues.map(() => Math.random());
+                            const bias = Math.random();
+                            const output = inputValues.reduce((sum, val, i) => sum + val * weights[i], bias);
+                            return {
+                                label: `H2${index + 1}`,
+                                info: {
+                                    label: `Hidden Layer 2 Neuron ${index + 1}`,
+                                    summary: `This neuron applies a linear transformation followed by a ReLU activation function.`,
+                                    description: `Receives the output from the first hidden layer and applies: ReLU(W2 * input + b2).`,
+                                    values: { input: inputValues, weights, bias, output: Math.max(0, output) },
+                                    visual: (ctx) => generateVisual({ input: inputValues, weights, bias, output: Math.max(0, output) }, ctx)
+                                }
+                            };
+                        })
+                    },
+                    {
+                        id: "output-layer",
+                        color: "#FF00FF",
+                        neurons: [{
+                            label: "Output",
+                            info: {
+                                label: "Output Neuron",
+                                summary: "This neuron generates the final prediction or output.",
+                                description: "Generates the final prediction or output based on the processed data from the previous layers using softmax: softmax(W3 * input + b3).",
+                                values: { input: [1, 2, 3], weights: [0.5, 0.6, 0.7], bias: 0.1, output: softmax([1, 2, 3].map((val, i) => val * [0.5, 0.6, 0.7][i] + 0.1)) },
+                                visual: (ctx) => {
+                                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                                    ctx.font = '14px Arial';
+                                    const softmaxValues = softmax([1, 2, 3].map((val, i) => val * [0.5, 0.6, 0.7][i] + 0.1));
+                                    ctx.fillText('Softmax Probabilities:', 10, 20);
+                                    softmaxValues.forEach((val, i) => {
+                                        ctx.fillText(`${vocabulary[i]}: ${val.toFixed(2)}`, 10, 40 + i * 20);
+                                    });
+                                    const maxIndex = softmaxValues.indexOf(Math.max(...softmaxValues));
+                                    ctx.fillText(`Selected Token: ${vocabulary[maxIndex]}`, 10, 100);
+                                }
+                            }
+                        }]
+                    }
+                ];
+
+                const connections = [];
+                for (let layerIndex = 0; layerIndex < layers.length - 1; layerIndex++) {
+                    const currentLayerNeurons = layers[layerIndex].neurons.length;
+                    const nextLayerNeurons = layers[layerIndex + 1].neurons.length;
+                    for (let i = 0; i < currentLayerNeurons; i++) {
+                        for (let j = 0; j < nextLayerNeurons; j++) {
+                            connections.push({ 
+                                startLayer: layerIndex, 
+                                startNeuron: i, 
+                                endLayer: layerIndex + 1, 
+                                endNeuron: j, 
+                                color: layers[layerIndex].color 
+                            });
+                        }
+                    }
+                }
+
+                displayLayers(layers);
+                setTimeout(() => drawConnections(connections), 100); // Small delay to ensure elements are rendered
+            };
+
+            calculateAndDisplayAttention();
+        });
+    </script>
+</body>
+</html>
