@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XOR Backpropagation Diagram</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            text-align: center;
+        }
+        .grid-item {
+            padding: 10px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+        .arrow {
+            text-align: center;
+            font-size: 24px;
+        }
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+        #network-diagram {
+            width: 300px;
+            height: 400px;
+        }
+        .node {
+            fill: #fff;
+            stroke: #000;
+            stroke-width: 2px;
+        }
+        .link {
+            stroke: #999;
+            stroke-opacity: 0.6;
+        }
+        #pie-chart-container {
+            width: 300px;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+        #calculations {
+            width: 100%;
+            text-align: left;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>XOR Backpropagation Diagram</h1>
+        <div class="grid-container">
+            <!-- Input Layer -->
+            <div class="grid-item" id="input-layer" onclick="showBackprop('input')">
+                <strong>Input Layer</strong><br>
+                X1 = <span id="x1">0</span><br>
+                X2 = <span id="x2">1</span>
+            </div>
+            <div class="arrow">→</div>
+            <!-- Hidden Layer -->
+            <div class="grid-item" id="hidden-layer" onclick="showBackprop('hidden')">
+                <strong>Hidden Layer</strong><br>
+                H1 = <span id="h1">f(W1*X1 + W2*X2 + B1)</span><br>
+                H2 = <span id="h2">f(W3*X1 + W4*X2 + B2)</span>
+            </div>
+            <div class="arrow">→</div>
+            <!-- Output Layer -->
+            <div class="grid-item" id="output-layer" onclick="showBackprop('output')">
+                <strong>Output Layer</strong><br>
+                O1 = <span id="o1">f(W5*H1 + W6*H2 + B3)</span>
+            </div>
+            <div class="arrow">→</div>
+            <!-- Loss Calculation -->
+            <div class="grid-item" id="loss-calculation" style="grid-column: span 3;" onclick="showBackprop('loss')">
+                <strong>Loss Calculation</strong><br>
+                L = <span id="loss">(Y - O1)^2</span>
+            </div>
+        </div>
+        <div class="button-container">
+            <button onclick="nextCycle()">Next Learning Cycle</button>
+        </div>
+        <div id="pie-chart-container">
+            <canvas id="pieChart"></canvas>
+        </div>
+        <div id="calculations"></div>
+    </div>
+    <div id="network-diagram"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.0.0/d3.min.js"></script>
+    <script>
+        let pieChart;
+
+        function sigmoid(x) {
+            return 1 / (1 + Math.exp(-x));
+        }
+
+        function sigmoidDerivative(x) {
+            return sigmoid(x) * (1 - sigmoid(x));
+        }
+
+        let W1 = Math.random();
+        let W2 = Math.random();
+        let W3 = Math.random();
+        let W4 = Math.random();
+        let W5 = Math.random();
+        let W6 = Math.random();
+        let B1 = Math.random();
+        let B2 = Math.random();
+        let B3 = Math.random();
+
+        function nextCycle() {
+            const x1 = Math.round(Math.random());
+            const x2 = Math.round(Math.random());
+            document.getElementById('x1').textContent = x1;
+            document.getElementById('x2').textContent = x2;
+
+            const H1_input = W1 * x1 + W2 * x2 + B1;
+            const H2_input = W3 * x1 + W4 * x2 + B2;
+            const H1 = sigmoid(H1_input);
+            const H2 = sigmoid(H2_input);
+            const O1_input = W5 * H1 + W6 * H2 + B3;
+            const O1 = sigmoid(O1_input);
+
+            const Y = x1 ^ x2;
+            const loss = (Y - O1) ** 2;
+
+            document.getElementById('h1').textContent = H1.toFixed(2);
+            document.getElementById('h2').textContent = H2.toFixed(2);
+            document.getElementById('o1').textContent = O1.toFixed(2);
+            document.getElementById('loss').textContent = loss.toFixed(4);
+
+            updateNetworkDiagram();
+        }
+
+        function showBackprop(layer) {
+            const x1 = parseFloat(document.getElementById('x1').textContent);
+            const x2 = parseFloat(document.getElementById('x2').textContent);
+
+            const H1_input = W1 * x1 + W2 * x2 + B1;
+            const H2_input = W3 * x1 + W4 * x2 + B2;
+            const H1 = sigmoid(H1_input);
+            const H2 = sigmoid(H2_input);
+            const O1_input = W5 * H1 + W6 * H2 + B3;
+            const O1 = sigmoid(O1_input);
+
+            const Y = x1 ^ x2;
+            const loss = (Y - O1) ** 2;
+
+            const O1_error = O1 - Y;
+            const O1_delta = O1_error * sigmoidDerivative(O1_input);
+
+            const H1_error = O1_delta * W5;
+            const H2_error = O1_delta * W6;
+            const H1_delta = H1_error * sigmoidDerivative(H1_input);
+            const H2_delta = H2_error * sigmoidDerivative(H2_input);
+
+            let pieData;
+            let calculations = "";
+
+            if (layer === 'input') {
+                pieData = [
+                    { label: 'X1', value: Math.abs(x1) },
+                    { label: 'X2', value: Math.abs(x2) }
+                ];
+                calculations = `
+                    <h3>Input Layer Calculations:</h3>
+                    <p>X1 = ${x1}</p>
+                    <p>X2 = ${x2}</p>
+                    <p>These are the input values for the current cycle.</p>
+                `;
+            } else if (layer === 'hidden') {
+                pieData = [
+                    { label: 'H1', value: Math.abs(H1_delta) },
+                    { label: 'H2', value: Math.abs(H2_delta) }
+                ];
+                calculations = `
+                    <h3>Hidden Layer Calculations:</h3>
+                    <p>H1_input = W1 * X1 + W2 * X2 + B1 = ${W1.toFixed(2)} * ${x1} + ${W2.toFixed(2)} * ${x2} + ${B1.toFixed(2)} = ${H1_input.toFixed(2)}</p>
+                    <p>H1 = sigmoid(H1_input) = ${H1.toFixed(4)}</p>
+                    <p>H2_input = W3 * X1 + W4 * X2 + B2 = ${W3.toFixed(2)} * ${x1} + ${W4.toFixed(2)} * ${x2} + ${B2.toFixed(2)} = ${H2_input.toFixed(2)}</p>
+                    <p>H2 = sigmoid(H2_input) = ${H2.toFixed(4)}</p>
+                    <h4>Backpropagation:</h4>
+                    <p>H1_error = O1_delta * W5 = ${O1_delta.toFixed(4)} * ${W5.toFixed(2)} = ${H1_error.toFixed(4)}</p>
+                    <p>H1_delta = H1_error * sigmoid_derivative(H1_input) = ${H1_error.toFixed(4)} * ${sigmoidDerivative(H1_input).toFixed(4)} = ${H1_delta.toFixed(4)}</p>
+                    <p>H2_error = O1_delta * W6 = ${O1_delta.toFixed(4)} * ${W6.toFixed(2)} = ${H2_error.toFixed(4)}</p>
+                    <p>H2_delta = H2_error * sigmoid_derivative(H2_input) = ${H2_error.toFixed(4)} * ${sigmoidDerivative(H2_input).toFixed(4)} = ${H2_delta.toFixed(4)}</p>
+                `;
+            } else if (layer === 'output') {
+                pieData = [
+                    { label: 'O1', value: Math.abs(O1_delta) }
+                ];
+                calculations = `
+                    <h3>Output Layer Calculations:</h3>
+                    <p>O1_input = W5 * H1 + W6 * H2 + B3 = ${W5.toFixed(2)} * ${H1.toFixed(4)} + ${W6.toFixed(2)} * ${H2.toFixed(4)} + ${B3.toFixed(2)} = ${O1_input.toFixed(4)}</p>
+                    <p>O1 = sigmoid(O1_input) = ${O1.toFixed(4)}</p>
+                    <h4>Backpropagation:</h4>
+                    <p>O1_error = O1 - Y = ${O1.toFixed(4)} - ${Y} = ${O1_error.toFixed(4)}</p>
+                    <p>O1_delta = O1_error * sigmoid_derivative(O1_input) = ${O1_error.toFixed(4)} * ${sigmoidDerivative(O1_input).toFixed(4)} = ${O1_delta.toFixed(4)}</p>
+                `;
+            } else if (layer === 'loss') {
+                pieData = [
+                    { label: 'Loss', value: loss }
+                ];
+                calculations = `
+                    <h3>Loss Calculation:</h3>
+                    <p>Y (Expected Output) = ${Y}</p>
+                    <p>O1 (Actual Output) = ${O1.toFixed(4)}</p>
+                    <p>Loss = (Y - O1)^2 = (${Y} - ${O1.toFixed(4)})^2 = ${loss.toFixed(4)}</p>
+                `;
+            }
+
+            updatePieChart(pieData);
+            document.getElementById('calculations').innerHTML = calculations;
+        }
+
+        function updatePieChart(data) {
+            const ctx = document.getElementById('pieChart').getContext('2d');
+            
+            if (pieChart) {
+                pieChart.destroy();
+            }
+
+            pieChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: data.map(item => item.label),
+                    datasets: [{
+                        data: data.map(item => item.value),
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    title: {
+                        display: true,
+                        text: 'Relative Contribution to Error'
+                    }
+                }
+            });
+        }
+
+        function updateNetworkDiagram() {
+            const width = 300;
+            const height = 400;
+            const nodeRadius = 20;
+
+            d3.select("#network-diagram").selectAll("*").remove();
+
+            const svg = d3.select("#network-diagram")
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height);
+
+            const nodes = [
+                { id: "X1", layer: 0 }, { id: "X2", layer: 0 },
+                { id: "H1", layer: 1 }, { id: "H2", layer: 1 },
+                { id: "O1", layer: 2 }
+            ];
+
+            const links = [
+                { source: "X1", target: "H1" }, { source: "X1", target: "H2" },
+                { source: "X2", target: "H1" }, { source: "X2", target: "H2" },
+                { source: "H1", target: "O1" }, { source: "H2", target: "O1" }
+            ];
+
+            const simulation = d3.forceSimulation(nodes)
+                .force("link", d3.forceLink(links).id(d => d.id))
+                .force("charge", d3.forceManyBody().strength(-300))
+                .force("x", d3.forceX().x(d => width * (d.layer + 1) / 4))
+                .force("y", d3.forceY(height / 2));
+
+            const link = svg.append("g")
+                .selectAll("line")
+                .data(links)
+                .enter().append("line")
+                .attr("class", "link");
+
+            const node = svg.append("g")
+                .selectAll("circle")
+                .data(nodes)
+                .enter().append("circle")
+                .attr("class", "node")
+                .attr("r", nodeRadius)
+                .call(d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended));
+
+            const label = svg.append("g")
+                .selectAll("text")
+                .data(nodes)
+                .enter().append("text")
+                .text(d => d.id)
+                .attr("text-anchor", "middle")
+                .attr("dominant-baseline", "central");
+
+            simulation.on("tick", () => {
+                link
+                    .attr("x1", d => d.source.x)
+                    .attr("y1", d => d.source.y)
+                    .attr("x2", d => d.target.x)
+                    .attr("y2", d => d.target.y);
+
+                node
+                    .attr("cx", d => d.x)
+                    .attr("cy", d => d.y);
+
+                label
+                    .attr("x", d => d.x)
+                    .attr("y", d => d.y);
+            });
+
+            function dragstarted(event) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                event.subject.fx = event.subject.x;
+                event.subject.fy = event.subject.y;
+            }
+
+            function dragged(event) {
+                event.subject.fx = event.x;
+                event.subject.fy = event.y;
+            }
+
+            function dragended(event) {
+                if (!event.active) simulation.alphaTarget(0);
+                event.subject.fx = null;
+                event.subject.fy = null;
+            }
+        }
+
+        nextCycle();  // Initialize with the first random values
+        updateNetworkDiagram();
+    </script>
+</body>
+</html>
