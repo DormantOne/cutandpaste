@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Embedding to Softmax Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 800px;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        .embedding-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-gap: 10px;
+            margin-bottom: 20px;
+        }
+        .embedding-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .embedding-cell span {
+            font-size: 14px;
+        }
+        .softmax-visualization {
+            margin-top: 20px;
+        }
+        .softmax-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .softmax-bar {
+            height: 20px;
+            background-color: #4CAF50;
+            margin-left: 10px;
+            transition: width 0.3s ease;
+        }
+        .details {
+            margin-left: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Embedding to Softmax Visualization</h1>
+        <div class="embedding-grid" id="embedding-grid">
+            <!-- Embedding cells will be generated here -->
+        </div>
+        <button onclick="calculateSoftmax()">Calculate Softmax</button>
+        <div class="softmax-visualization" id="softmax-visualization">
+            <h3>Softmax Output</h3>
+            <div id="softmax-items"></div>
+        </div>
+    </div>
+
+    <script>
+        const embeddings = {
+            "the": [0.1, 0.2, 0.3],
+            "cat": [0.2, 0.1, 0.4],
+            "sat": [0.3, 0.3, 0.3],
+            "on": [0.4, 0.1, 0.1],
+            "mat": [0.5, 0.2, 0.2],
+            "fat": [0.2, 0.5, 0.1],
+            "dog": [0.1, 0.3, 0.2],
+            "run": [0.3, 0.2, 0.5],
+            "bark": [0.2, 0.4, 0.1]
+        };
+
+        const vocabulary = ["the", "cat", "sat", "on", "mat", "fat", "dog", "run", "bark"];
+        
+        // Random weights and biases for 3 output neurons
+        const weights = [
+            [0.5, 0.3, 0.2],
+            [0.2, 0.1, 0.7],
+            [0.1, 0.4, 0.5]
+        ];
+        const biases = [0.1, 0.2, 0.3];
+
+        function softmax(arr) {
+            const expScores = arr.map(val => Math.exp(val));
+            const sumExpScores = expScores.reduce((sum, val) => sum + val, 0);
+            return expScores.map(val => val / sumExpScores);
+        }
+
+        function createEmbeddingGrid() {
+            const embeddingGrid = document.getElementById('embedding-grid');
+            vocabulary.forEach(word => {
+                const cell = document.createElement('div');
+                cell.className = 'embedding-cell';
+                cell.innerHTML = `
+                    <span><strong>${word}</strong></span>
+                    <span>(${embeddings[word].join(', ')})</span>
+                `;
+                embeddingGrid.appendChild(cell);
+            });
+        }
+
+        function calculateLogits() {
+            return vocabulary.map((word) => 
+                weights.map((weight, neuronIndex) =>
+                    embeddings[word].reduce((sum, val, j) => sum + val * weight[j], biases[neuronIndex])
+                )
+            );
+        }
+
+        function calculateSoftmax() {
+            const logits = calculateLogits();
+            const softmaxValues = logits.map(logit => softmax(logit));
+            displaySoftmax(vocabulary, logits, softmaxValues);
+        }
+
+        function displaySoftmax(vocabulary, logits, softmaxValues) {
+            const softmaxItems = document.getElementById('softmax-items');
+            softmaxItems.innerHTML = '';
+            logits.forEach((logitArray, wordIndex) => {
+                logitArray.forEach((logit, neuronIndex) => {
+                    const probability = softmaxValues[wordIndex][neuronIndex];
+                    const expScore = Math.exp(logit);
+                    const sumExpScores = logitArray.reduce((sum, l) => sum + Math.exp(l), 0);
+                    const div = document.createElement('div');
+                    div.className = 'softmax-item';
+                    div.innerHTML = `
+                        <span>${vocabulary[wordIndex]} (Neuron ${neuronIndex + 1}, Logit: ${logit.toFixed(2)}):</span>
+                        <div style="width: ${probability * 100}%" class="softmax-bar"></div>
+                        <span>${probability.toFixed(2)}</span>
+                        <div class="details">
+                            <div>e^${logit.toFixed(2)} = ${expScore.toFixed(2)}</div>
+                            <div>Sum of Exponentials = ${sumExpScores.toFixed(2)}</div>
+                            <div>Probability = ${probability.toFixed(2)}</div>
+                        </div>
+                    `;
+                    softmaxItems.appendChild(div);
+                });
+            });
+        }
+
+        // Initialize the embedding grid on page load
+        createEmbeddingGrid();
+    </script>
+</body>
+</html>
