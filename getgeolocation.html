@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Geocode Location and Find Cross Street</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+    <style>
+        .input-field {
+            display: block;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Geocode Location and Find Cross Street</h1>
+    <div class="input-field">
+        <label for="password">Enter Password:</label>
+        <input type="password" id="password" placeholder="Password">
+    </div>
+    <button onclick="getLocation()">Get Location</button>
+
+    <div class="input-field">
+        <label for="name">My name is:</label>
+        <input type="text" id="name" placeholder="First Name">
+    </div>
+    <div class="input-field">
+        <label for="location">Location:</label>
+        <input type="text" id="location" readonly>
+    </div>
+    <div class="input-field">
+        <label for="crossStreet">Cross Streets:</label>
+        <input type="text" id="crossStreet" readonly>
+    </div>
+    <div class="input-field">
+        <label for="uberCredit">Uber Credit:</label>
+        <input type="text" id="uberCredit" value="Fake Uber Credit: $10.00" readonly>
+    </div>
+    <div class="input-field">
+        <label for="message">Generated Message:</label>
+        <textarea id="message" rows="4" cols="50" readonly></textarea>
+    </div>
+    <button onclick="generateMessage()">Generate Message</button>
+    <button onclick="copyAll()">Copy All</button>
+    <br><br>
+    <a href="https://www.ubereats.com/" target="_blank">Go to Uber Eats</a>
+
+    <script>
+        function decryptApiKey(encryptedApiKey, password) {
+            const key = CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex).slice(0, 32);
+            const bytes = CryptoJS.AES.decrypt(encryptedApiKey, key);
+            const originalText = bytes.toString(CryptoJS.enc.Utf8);
+            return originalText;
+        }
+
+        const encryptedApiKey = 'U2FsdGVkX1+azJ9c11tmQb9S0Y9pvd6fFiU3sLxpytjkmQVqZJa0JS83tIL0pL3UzFLe5EoEHWSvquDMLYQsMw==';
+
+        function getLocation() {
+            const password = document.getElementById('password').value;
+            if (!password) {
+                alert('Please enter the password.');
+                return;
+            }
+
+            const apiKey = decryptApiKey(encryptedApiKey, password);
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => showPosition(position, apiKey), showError);
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+
+        function showPosition(position, apiKey) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            geocodeLatLng(lat, lng, apiKey);
+        }
+
+        function showError(error) {
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    alert("User denied the request for Geolocation. Please enable location services in your browser settings.");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    alert("Location information is unavailable.");
+                    break;
+                case error.TIMEOUT:
+                    alert("The request to get user location timed out.");
+                    break;
+                case error.UNKNOWN_ERROR:
+                    alert("An unknown error occurred.");
+                    break;
+            }
+        }
+
+        function geocodeLatLng(lat, lng, apiKey) {
+            const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`;
+            $.get(url, function (data) {
+                if (data.status === 'OK') {
+                    const address = data.results[0].formatted_address;
+                    document.getElementById('location').value = address;
+
+                    const crossStreet = getCrossStreet(data.results);
+                    document.getElementById('crossStreet').value = crossStreet;
+                } else {
+                    alert('Geocode was not successful for the following reason: ' + data.status);
+                }
+            }).fail(function (jqXHR, textStatus, errorThrown) {
+                alert('Request failed: ' + textStatus + ' - ' + errorThrown);
+            });
+        }
+
+        function getCrossStreet(results) {
+            let routes = new Set();
+            results.forEach(result => {
+                result.address_components.forEach(component => {
+                    if (component.types.includes('route')) {
+                        routes.add(component.long_name);
+                    }
+                });
+            });
+
+            if (routes.size >= 2) {
+                return Array.from(routes).slice(0, 2).join(' & ');
+            }
+            return 'No cross street found';
+        }
+
+        function generateMessage() {
+            const name = document.getElementById('name').value;
+            const location = document.getElementById('location').value;
+            const crossStreet = document.getElementById('crossStreet').value;
+            const uberCredit = document.getElementById('uberCredit').value;
+
+            const message = `My name is ${name}. I am at ${location}, near the cross streets of ${crossStreet}. This food was provided to me by the cardholder, and I have ${uberCredit}.`;
+            document.getElementById('message').value = message;
+        }
+
+        function copyAll() {
+            const message = document.getElementById('message').value;
+            const textarea = document.createElement('textarea');
+            textarea.value = message;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            alert('Copied all information!');
+        }
+    </script>
+</body>
+</html>
