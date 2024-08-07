@@ -1,18 +1,67 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Geocode Location and Find Cross Street</title>
+    <title>Kind Lunch</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 2em;
+        }
         .input-field {
             display: block;
+            margin-bottom: 20px;
+        }
+        .input-field label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .input-field input,
+        .input-field textarea {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        .copy-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .copy-buttons button {
+            flex: 1;
+        }
+        .qr-section {
+            margin-top: 30px;
+        }
+        .qr-section img {
+            display: block;
+            margin-bottom: 20px;
+        }
+        .qr-section h2 {
+            font-size: 1.2em;
             margin-bottom: 10px;
+        }
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Geocode Location and Find Cross Street</h1>
+    <h1>Kind Lunch</h1>
     <div class="input-field">
         <label for="password">Enter Password:</label>
         <input type="password" id="password" placeholder="Password">
@@ -40,16 +89,37 @@
         <textarea id="message" rows="4" cols="50" readonly></textarea>
     </div>
     <button onclick="generateMessage()">Generate Message</button>
-    <button onclick="copyAll()">Copy All</button>
+
+    <div class="copy-buttons">
+        <button onclick="copyToClipboard('location')">Copy Address</button>
+        <button onclick="copyToClipboard('crossStreet')">Copy Cross Street</button>
+        <button onclick="copyToClipboard('message')">Copy Message</button>
+        <button onclick="copyToClipboard('uberCredit')">Copy Uber Credit</button>
+        <button onclick="copyAll()">Copy All</button>
+        <button onclick="sendEmail()">Send Email</button>
+    </div>
     <br><br>
     <a href="https://www.ubereats.com/" target="_blank">Go to Uber Eats</a>
+    <br><br>
+    <a href="https://www.bigburgh.com/#/" target="_blank">Go to Big Burgh</a>
+    
+    <div class="qr-section">
+        <h2>QR for Big Burgh resources:</h2>
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://www.bigburgh.com/#/" alt="QR Code to Big Burgh">
+        <h2>QR for this page:</h2>
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://dormantone.github.io/cutandpaste/getgeolocation.html" alt="QR Code to This Page">
+    </div>
 
     <script>
         function decryptApiKey(encryptedApiKey, password) {
-            const key = CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex).slice(0, 32);
-            const bytes = CryptoJS.AES.decrypt(encryptedApiKey, key);
-            const originalText = bytes.toString(CryptoJS.enc.Utf8);
-            return originalText;
+            try {
+                const key = CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex).slice(0, 32);
+                const bytes = CryptoJS.AES.decrypt(encryptedApiKey, key);
+                return bytes.toString(CryptoJS.enc.Utf8);
+            } catch (e) {
+                alert('Invalid password or decryption error.');
+                return null;
+            }
         }
 
         const encryptedApiKey = 'U2FsdGVkX1+azJ9c11tmQb9S0Y9pvd6fFiU3sLxpytjkmQVqZJa0JS83tIL0pL3UzFLe5EoEHWSvquDMLYQsMw==';
@@ -62,6 +132,7 @@
             }
 
             const apiKey = decryptApiKey(encryptedApiKey, password);
+            if (!apiKey) return;
 
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(position => showPosition(position, apiKey), showError);
@@ -77,20 +148,22 @@
         }
 
         function showError(error) {
+            let message;
             switch (error.code) {
                 case error.PERMISSION_DENIED:
-                    alert("User denied the request for Geolocation. Please enable location services in your browser settings.");
+                    message = "User denied the request for Geolocation. Please enable location services in your browser settings.";
                     break;
                 case error.POSITION_UNAVAILABLE:
-                    alert("Location information is unavailable.");
+                    message = "Location information is unavailable.";
                     break;
                 case error.TIMEOUT:
-                    alert("The request to get user location timed out.");
+                    message = "The request to get user location timed out.";
                     break;
                 case error.UNKNOWN_ERROR:
-                    alert("An unknown error occurred.");
+                    message = "An unknown error occurred.";
                     break;
             }
+            alert(message);
         }
 
         function geocodeLatLng(lat, lng, apiKey) {
@@ -120,10 +193,7 @@
                 });
             });
 
-            if (routes.size >= 2) {
-                return Array.from(routes).slice(0, 2).join(' & ');
-            }
-            return 'No cross street found';
+            return routes.size >= 2 ? Array.from(routes).slice(0, 2).join(' & ') : 'No cross street found';
         }
 
         function generateMessage() {
@@ -132,19 +202,61 @@
             const crossStreet = document.getElementById('crossStreet').value;
             const uberCredit = document.getElementById('uberCredit').value;
 
+            if (!name || !location || !crossStreet || !uberCredit) {
+                alert('Please make sure all fields are filled.');
+                return;
+            }
+
             const message = `My name is ${name}. I am at ${location}, near the cross streets of ${crossStreet}. This food was provided to me by the cardholder, and I have ${uberCredit}.`;
             document.getElementById('message').value = message;
         }
 
+        function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId).value;
+            if (text) {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('Copied to clipboard!');
+            } else {
+                alert(`No ${elementId.replace(/([A-Z])/g, ' $1').toLowerCase()} to copy.`);
+            }
+        }
+
         function copyAll() {
+            const location = document.getElementById('location').value;
+            const crossStreet = document.getElementById('crossStreet').value;
             const message = document.getElementById('message').value;
-            const textarea = document.createElement('textarea');
-            textarea.value = message;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-            alert('Copied all information!');
+            const uberCredit = document.getElementById('uberCredit').value;
+
+            if (location && crossStreet && message && uberCredit) {
+                const allText = `${location}\n\n${crossStreet}\n\n${message}\n\n${uberCredit}`;
+                const textarea = document.createElement('textarea');
+                textarea.value = allText;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('All information copied to clipboard!');
+            } else {
+                alert('Not all information is available to copy.');
+            }
+        }
+
+        function sendEmail() {
+            const message = document.getElementById('message').value;
+            if (!message) {
+                alert('No message to send.');
+                return;
+            }
+            const subject = encodeURIComponent("Review Funding Request");
+            const body = encodeURIComponent(`Please review funding and provide the following message:\n\n${message}`);
+            const email = "sohnenae@gmail.com";
+            const mailtoLink = `mailto:${email}?subject=${subject}&body=${body}`;
+            window.location.href = mailtoLink;
         }
     </script>
 </body>
