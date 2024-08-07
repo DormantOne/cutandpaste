@@ -53,9 +53,17 @@
             font-size: 1.2em;
             margin-bottom: 10px;
         }
+        .big-link {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
         @media (max-width: 600px) {
             body {
                 padding: 10px;
+            }
+            .big-link {
+                font-size: 1.2em;
             }
         }
     </style>
@@ -89,6 +97,8 @@
         <textarea id="message" rows="4" cols="50"></textarea>
     </div>
     <button onclick="generateMessage()">Generate Message</button>
+    <button onclick="saveData()">Save Data</button>
+    <button onclick="clearData()">Clear Data</button>
 
     <div class="copy-buttons">
         <button onclick="copyToClipboard('location')">Copy Address</button>
@@ -99,7 +109,7 @@
         <button onclick="sendEmail()">Send Email</button>
     </div>
     <br><br>
-    <a href="https://www.ubereats.com/" target="_blank">Go to Uber Eats</a>
+    <a class="big-link" href="https://www.ubereats.com/" target="_blank">Go to Uber Eats</a>
     <br><br>
     <a href="https://www.bigburgh.com/#/" target="_blank">Go to Big Burgh</a>
     
@@ -127,6 +137,22 @@
             localStorage.setItem('crossStreet', document.getElementById('crossStreet').value);
             localStorage.setItem('uberCredit', document.getElementById('uberCredit').value);
             localStorage.setItem('message', document.getElementById('message').value);
+        }
+
+        function clearData() {
+            // Clear data from localStorage
+            localStorage.removeItem('name');
+            localStorage.removeItem('location');
+            localStorage.removeItem('crossStreet');
+            localStorage.removeItem('uberCredit');
+            localStorage.removeItem('message');
+
+            // Clear the fields
+            document.getElementById('name').value = '';
+            document.getElementById('location').value = '';
+            document.getElementById('crossStreet').value = '';
+            document.getElementById('uberCredit').value = 'Fake Uber Credit: $10.00';
+            document.getElementById('message').value = '';
         }
 
         function decryptApiKey(encryptedApiKey, password) {
@@ -226,7 +252,7 @@
                 return;
             }
 
-            const message = `My name is ${name}. I am at ${location}, near the cross streets of ${crossStreet}. This food was provided to me by the cardholder, and I have ${uberCredit}.`;
+            const message = `My name is ${name}. I am outside near ${location}, near the cross streets of ${crossStreet}. This food was provided to me by the cardholder, and I have ${uberCredit}.`;
             document.getElementById('message').value = message;
             saveData();
         }
