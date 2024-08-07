@@ -74,19 +74,19 @@
     </div>
     <div class="input-field">
         <label for="location">Location:</label>
-        <input type="text" id="location" readonly>
+        <input type="text" id="location">
     </div>
     <div class="input-field">
         <label for="crossStreet">Cross Streets:</label>
-        <input type="text" id="crossStreet" readonly>
+        <input type="text" id="crossStreet">
     </div>
     <div class="input-field">
         <label for="uberCredit">Uber Credit:</label>
-        <input type="text" id="uberCredit" value="Fake Uber Credit: $10.00" readonly>
+        <input type="text" id="uberCredit" value="Fake Uber Credit: $10.00">
     </div>
     <div class="input-field">
         <label for="message">Generated Message:</label>
-        <textarea id="message" rows="4" cols="50" readonly></textarea>
+        <textarea id="message" rows="4" cols="50"></textarea>
     </div>
     <button onclick="generateMessage()">Generate Message</button>
 
@@ -111,6 +111,24 @@
     </div>
 
     <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Load saved data from localStorage
+            document.getElementById('name').value = localStorage.getItem('name') || '';
+            document.getElementById('location').value = localStorage.getItem('location') || '';
+            document.getElementById('crossStreet').value = localStorage.getItem('crossStreet') || '';
+            document.getElementById('uberCredit').value = localStorage.getItem('uberCredit') || 'Fake Uber Credit: $10.00';
+            document.getElementById('message').value = localStorage.getItem('message') || '';
+        });
+
+        function saveData() {
+            // Save data to localStorage
+            localStorage.setItem('name', document.getElementById('name').value);
+            localStorage.setItem('location', document.getElementById('location').value);
+            localStorage.setItem('crossStreet', document.getElementById('crossStreet').value);
+            localStorage.setItem('uberCredit', document.getElementById('uberCredit').value);
+            localStorage.setItem('message', document.getElementById('message').value);
+        }
+
         function decryptApiKey(encryptedApiKey, password) {
             try {
                 const key = CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex).slice(0, 32);
@@ -175,6 +193,7 @@
 
                     const crossStreet = getCrossStreet(data.results);
                     document.getElementById('crossStreet').value = crossStreet;
+                    saveData();
                 } else {
                     alert('Geocode was not successful for the following reason: ' + data.status);
                 }
@@ -209,6 +228,7 @@
 
             const message = `My name is ${name}. I am at ${location}, near the cross streets of ${crossStreet}. This food was provided to me by the cardholder, and I have ${uberCredit}.`;
             document.getElementById('message').value = message;
+            saveData();
         }
 
         function copyToClipboard(elementId) {
