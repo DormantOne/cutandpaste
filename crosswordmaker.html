@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Crossword Grid</title>
+    <style>
+        #grid {
+            display: grid;
+            grid-template-columns: repeat(30, 30px);
+            background-color: #fff;
+            padding: 10px;
+            margin: auto;
+        }
+
+        .cell {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+            font-weight: bold;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            cursor: pointer;
+        }
+
+        .cell-filled {
+            background-color: #eef;
+        }
+    </style>
+</head>
+<body>
+    <div id="grid"></div>
+    <div id="configButtons"></div>
+    <button onclick="startIterations()">Start Iterations</button>
+    <button onclick="downloadWordPlacements()">Download Word Placements</button>
+    <script>
+        const wordPool = [
+            "AUTONOMY",
+            "COLLABORATION",
+            "VALUES",
+            "PREFERENCES",
+            "ENGAGEMENT",
+            "COMMUNICATION",
+            "INFORMED",
+            "CONSENT",
+            "TEACHBACK",
+            "EVIDENCE",
+            "OPTIONS",
+            "DECISION",
+            "PARTICIPATION",
+            "EMPOWER",
+            "RISK"
+        ];
+
+
+        const gridSize = 30;
+        let grid = Array.from({ length: gridSize }, () => Array(gridSize).fill(''));
+        const gridContainer = document.getElementById('grid');
+        let wordPlacementLog = []; // Data structure to log word placements
+        let topConfigurations = []; // To store top configurations
+
+        function initializeGrid() {
+            gridContainer.style.gridTemplateColumns = `repeat(${gridSize}, 30px)`;
+            for (let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize; j++) {
+                    const cell = document.createElement('div');
+                    cell.id = `cell-${i}-${j}`;
+                    cell.className = 'cell';
+                    gridContainer.appendChild(cell);
+                }
+            }
+        }
+
+        function clearGrid() {
+            for (let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize; j++) {
+                    grid[i][j] = '';
+                }
+            }
+            updateGrid();
+        }
+
+        function updateGrid() {
+            for (let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize; j++) {
+                    const cell = document.getElementById(`cell-${i}-${j}`);
+                    cell.textContent = grid[i][j] || '';
+                    cell.className = grid[i][j] ? 'cell cell-filled' : 'cell';
+                }
+            }
+        }
+
+        function logWordPlacement(word, x, y, vertical) {
+            wordPlacementLog.push({ word, x, y, vertical: vertical ? "vertical" : "horizontal" });
+        }
+
+        function selectRandomWords(wordPool, count) {
+            let shuffled = [...wordPool].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, count);
+        }
+
+        function selectLongestWord(words) {
+            return words.reduce((longest, current) => current.length > longest.length ? current : longest, "");
+        }
+
+        function canPlaceWord(word, x, y, vertical) {
+            const length = word.length;
+            if (vertical) {
+                if (x + length > gridSize) return false;
+            } else {
+                if (y + length > gridSize) return false;
+            }
+
+            for (let i = 0; i < length; i++) {
+                let nx = x + (vertical ? i : 0);
+                let ny = y + (vertical ? 0 : i);
+                if (!grid[nx] || grid[nx][ny] === undefined || (grid[nx][ny] !== '' && grid[nx][ny] !== word[i])) {
+                    return false;
+                }
+            }
+
+            // Temporarily place word to check for unauthorized words
+            let tempGrid = JSON.parse(JSON.stringify(grid));
+            if (vertical) {
+                for (let i = 0; i < length; i++) {
+                    tempGrid[x + i][y] = word[i];
+                }
+            } else {
+                for (let i = 0; i < length; i++) {
+                    tempGrid[x][y + i] = word[i];
+                }
+            }
+
+            // Check for unauthorized words after this placement
+            for (let i = 0; i < length; i++) {
+                if (vertical) {
+                    if (checkForUnauthorizedWords(tempGrid, x + i, y)) {
+                        return false;  // Found unauthorized word
+                    }
+                } else {
+                    if (checkForUnauthorizedWords(tempGrid, x, y + i)) {
+                        return false;  // Found unauthorized word
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        function checkForUnauthorizedWords(grid, x, y) {
+            // Check horizontally
+            let wordHorizontal = extractCompleteWord(grid, x, y, false);
+            if (wordHorizontal.length > 1 && !wordPool.includes(wordHorizontal)) {
+                return true; // Unauthorized horizontal word found
+            }
+
+            // Check vertically
+            let wordVertical = extractCompleteWord(grid, x, y, true);
+            if (wordVertical.length > 1 && !wordPool.includes(wordVertical)) {
+                return true; // Unauthorized vertical word found
+            }
+
+            return false; // No unauthorized words found
+        }
+
+        function extractCompleteWord(grid, startX, startY, vertical) {
+            let word = '';
+            let delta = vertical ? [1, 0] : [0, 1];
+            let reverseDelta = vertical ? [-1, 0] : [0, -1];
+            let posX = startX, posY = startY;
+
+            // Move backward to the start of the word
+            while (posX >= 0 && posY >= 0 && grid[posX] && grid[posX][posY]) {
+                posX += reverseDelta[0];
+                posY += reverseDelta[1];
+            }
+            // Adjust to the first valid character
+            posX += delta[0];
+            posY += delta[1];
+
+            // Extract the complete word
+            while (posX < gridSize && posY < gridSize && grid[posX] && grid[posX][posY]) {
+                word += grid[posX][posY];
+                posX += delta[0];
+                posY += delta[1];
+            }
+
+            return word;
+        }
+
+        function placeWord(word, x, y, vertical) {
+            const length = word.length;
+            if (vertical) {
+                for (let i = 0; i < length; i++) {
+                    grid[x + i][y] = word[i];
+                }
+            } else {
+                for (let i = 0; i < length; i++) {
+                    grid[x][y + i] = word[i];
+                }
+            }
+            logWordPlacement(word, x, y, vertical); // Log the placement
+            updateGrid();
+        }
+
+        function generateCrossword() {
+            let words = selectRandomWords(wordPool, 10);
+            wordPlacementLog = [];
+            clearGrid();
+
+            let rootWord = selectLongestWord(words);
+            let rootX = Math.floor((gridSize - rootWord.length) / 2);
+            let rootY = Math.floor(gridSize / 2);
+
+            placeWord(rootWord, rootX, rootY, true);
+
+            words.splice(words.indexOf(rootWord), 1);
+
+            for (let word of words) {
+                if (!placeWordInGrid(word)) {
+                    console.log("Failed to place: " + word);
+                }
+            }
+            return calculateIntersections();
+        }
+
+        function placeWordInGrid(word) {
+            let placed = false;
+
+            outer_loop:
+            for (let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize; j++) {
+                    for (let charIndex = 0; charIndex < word.length; charIndex++) {
+                        if (grid[i][j] === word[charIndex]) {
+                            // Try vertical placement
+                            if (canPlaceWord(word, i - charIndex, j, true)) {
+                                placeWord(word, i - charIndex, j, true);
+                                placed = true;
+                                break outer_loop;
+                            }
+                            // Try horizontal placement
+                            if (canPlaceWord(word, i, j - charIndex, false)) {
+                                placeWord(word, i, j - charIndex, false);
+                                placed = true;
+                                break outer_loop;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return placed;
+        }
+
+        function calculateIntersections() {
+            let intersectionCount = 0;
+            let totalLetters = 0;
+
+            for (let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize; j++) {
+                    if (grid[i][j] !== '') {
+                        totalLetters++;
+                        if ((i > 0 && grid[i - 1][j] !== '') || (i < gridSize - 1 && grid[i + 1][j] !== '')) {
+                            intersectionCount++;
+                        }
+                        if ((j > 0 && grid[i][j - 1] !== '') || (j < gridSize - 1 && grid[i][j + 1] !== '')) {
+                            intersectionCount++;
+                        }
+                    }
+                }
+            }
+
+            return {
+                grid: JSON.parse(JSON.stringify(grid)),
+                wordPlacementLog: JSON.parse(JSON.stringify(wordPlacementLog)),
+                score: intersectionCount / totalLetters
+            };
+        }
+
+        function findTopConfigurations(iterations) {
+            topConfigurations = []; // Reset top configurations
+            for (let i = 0; i < iterations; i++) {
+                let config = generateCrossword();
+                topConfigurations.push(config);
+            }
+            topConfigurations.sort((a, b) => b.score - a.score);
+            topConfigurations = topConfigurations.slice(0, 4);
+            displayTopConfigurations();
+        }
+
+        function displayTopConfigurations() {
+            const configButtons = document.getElementById('configButtons');
+            configButtons.innerHTML = '';
+
+            topConfigurations.forEach((config, index) => {
+                let button = document.createElement('button');
+                button.className = 'configButton';
+                button.textContent = `Show Configuration ${index + 1}`;
+                button.onclick = () => showConfiguration(config);
+                configButtons.appendChild(button);
+            });
+        }
+
+        function showConfiguration(config) {
+            grid = JSON.parse(JSON.stringify(config.grid));
+            wordPlacementLog = JSON.parse(JSON.stringify(config.wordPlacementLog));
+            updateGrid();
+        }
+
+        function startIterations() {
+            let iteration = 0;
+            const maxIterations = 1000;
+
+            function nextIteration() {
+                if (iteration < maxIterations) {
+                    let config = generateCrossword();
+                    topConfigurations.push(config);
+                    iteration++;
+                    setTimeout(nextIteration, 1); // 1-second delay between iterations
+                } else {
+                    topConfigurations.sort((a, b) => b.score - a.score);
+                    topConfigurations = topConfigurations.slice(0, 4);
+                    displayTopConfigurations();
+                }
+            }
+
+            topConfigurations = []; // Clear previous top configurations
+            nextIteration();
+        }
+
+        function downloadWordPlacements() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(wordPlacementLog));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "word_placements.json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        initializeGrid();
+    </script>
+</body>
+</html>
