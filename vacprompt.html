@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Auto Copy Text on Load</title>
+    <script>
+        window.onload = function () {
+            var blockOfText = `Compare the absolute risk reduction of mortality over 1 year for influenza vaccination, pneumococcal vaccination, COVID-19 vaccination, RSV vaccination, and statin therapy in adults over 75 with pre-existing heart and lung disease. Include data on number needed to treat (NNT) to prevent one death, if available. Place also in table. Please use the most recent high-quality studies or meta-analyses, and specify the date of the evidence used.`;  // Multiline text stored using template literals
+
+            // Convert multiline text to a single line by replacing newlines with spaces
+            var textToCopy = blockOfText.replace(/\n/g, ' ');
+
+            navigator.clipboard.writeText(textToCopy)
+                .then(() => {
+                    alert("Text copied to clipboard: " + textToCopy);
+                })
+                .catch(err => {
+                    console.error('Failed to copy text: ', err);
+                    alert('Failed to copy text: ' + err);
+                });
+        };
+    </script>
+</head>
+<body>
+<h1>grand rounds paper now on your clipboard - if you approved</h1>
+<p>Use one of the following AI chatbots to discuss paper with you:</p>
+    <p>you have to paste it in of course - but it it is on your clipboard now to paste in</p>
+<ul>
+    <li><a href="https://www.bing.com/chat" target="_blank">Microsoft Copilot</a></li><br>
+    <li><a href="https://chat.openai.com/" target="_blank">ChatGPT by OpenAI</a></li><br>
+    <li><a href="https://claude.ai/" target="_blank">Claude by Anthropic</a></li><br>
+    <li><a href="https://gemini.google.com/" target="_blank">Gemini</a></li> <!-- Note: Replace this with the correct URL for Gemini if it's an AI service -->
+</ul>
+</body>
+</html>
