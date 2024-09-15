@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Name and Position Guessing Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        input, select, button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Name and Position Guessing Game</h1>
+
+    <div id="input-mode">
+        <h2>Input Mode</h2>
+        <input type="text" id="name-input" placeholder="Enter a name">
+        <input type="text" id="position-input" placeholder="Enter a position/location">
+        <select id="real-or-fake">
+            <option value="">Is this name real or fake?</option>
+            <option value="real">Real</option>
+            <option value="fake">Fake</option>
+        </select>
+        <button id="add-name-btn">Add Name</button>
+        <button id="switch-to-test-btn">Switch to Test Mode</button>
+    </div>
+
+    <div id="test-mode" class="hidden">
+        <h2>Test Mode</h2>
+        <p id="test-name"></p>
+        <p id="test-position"></p>
+        <button id="real-btn">Real</button>
+        <button id="fake-btn">Fake</button>
+        <button id="switch-to-input-btn">Switch to Input Mode</button>
+    </div>
+
+    <div id="result"></div>
+    <div id="score"></div>
+
+    <button id="reset-btn">Reset Game</button>
+
+    <script>
+        let entries = JSON.parse(localStorage.getItem('entries')) || [];
+        let score = parseInt(localStorage.getItem('score')) || 0;
+        let currentTestEntry = null;
+
+        function saveData() {
+            localStorage.setItem('entries', JSON.stringify(entries));
+            localStorage.setItem('score', score.toString());
+        }
+
+        function addEntry(name, position, isReal) {
+            entries.push({ name, position, isReal });
+            saveData();
+        }
+
+        function getRandomEntry() {
+            return entries[Math.floor(Math.random() * entries.length)];
+        }
+
+        function switchMode(toTest) {
+            document.getElementById('input-mode').classList.toggle('hidden', toTest);
+            document.getElementById('test-mode').classList.toggle('hidden', !toTest);
+            if (toTest && entries.length > 0) {
+                currentTestEntry = getRandomEntry();
+                document.getElementById('test-name').textContent = currentTestEntry.name;
+                document.getElementById('test-position').textContent = currentTestEntry.position;
+            }
+            updateScoreDisplay();
+        }
+
+        function updateScoreDisplay() {
+            document.getElementById('score').textContent = `Score: ${score}`;
+        }
+
+        document.getElementById('add-name-btn').addEventListener('click', function () {
+            const name = document.getElementById('name-input').value;
+            const position = document.getElementById('position-input').value;
+            const isReal = document.getElementById('real-or-fake').value;
+
+            if (!name || !position || !isReal) {
+                alert('Please enter a name, position, and select if it\'s real or fake');
+                return;
+            }
+
+            addEntry(name, position, isReal === 'real');
+            document.getElementById('name-input').value = '';
+            document.getElementById('position-input').value = '';
+            document.getElementById('real-or-fake').value = '';
+            alert('Entry added successfully!');
+        });
+
+        document.getElementById('switch-to-test-btn').addEventListener('click', function () {
+            if (entries.length === 0) {
+                alert('Please add some entries before switching to test mode');
+                return;
+            }
+            switchMode(true);
+        });
+
+        document.getElementById('switch-to-input-btn').addEventListener('click', function () {
+            switchMode(false);
+        });
+
+        function checkAnswer(guess) {
+            const isCorrect = (guess === 'real') === currentTestEntry.isReal;
+            const resultDiv = document.getElementById('result');
+
+            if (isCorrect) {
+                resultDiv.innerHTML = '<p style="color: green;">Correct!</p>';
+                score++;
+                saveData();
+            } else {
+                resultDiv.innerHTML = `<p style="color: red;">Incorrect! "${currentTestEntry.name}" (${currentTestEntry.position}) is ${currentTestEntry.isReal ? 'a real' : 'a fake'} entry.</p>`;
+            }
+
+            updateScoreDisplay();
+
+            currentTestEntry = getRandomEntry();
+            document.getElementById('test-name').textContent = currentTestEntry.name;
+            document.getElementById('test-position').textContent = currentTestEntry.position;
+        }
+
+        document.getElementById('real-btn').addEventListener('click', function () {
+            checkAnswer('real');
+        });
+
+        document.getElementById('fake-btn').addEventListener('click', function () {
+            checkAnswer('fake');
+        });
+
+        document.getElementById('reset-btn').addEventListener('click', function () {
+            if (confirm('Are you sure you want to reset the game? This will clear all entries and reset the score.')) {
+                localStorage.removeItem('entries');
+                localStorage.removeItem('score');
+                entries = [];
+                score = 0;
+                updateScoreDisplay();
+                switchMode(false);
+                alert('Game has been reset.');
+            }
+        });
+
+        updateScoreDisplay();
+    </script>
+</body>
+</html>
