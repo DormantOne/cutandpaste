@@ -51,9 +51,25 @@
         #factList h3 {
             margin-top: 20px;
         }
+        .feedback {
+            font-size: 1.2em;
+            margin-top: 10px;
+        }
+        .priority button {
+            flex-grow: 1;
+            margin: 5px;
+        }
         .disabled {
             background-color: #c8c8c8;
             cursor: not-allowed;
+        }
+        #clearField {
+            margin-top: 20px;
+        }
+        #clearField input {
+            width: 60px;
+            padding: 5px;
+            margin-right: 10px;
         }
     </style>
 </head>
@@ -65,7 +81,7 @@
         <div class="fact-box" id="factDisplay"></div>
 
         <!-- True or False -->
-        <div class="options">
+        <div class="options" id="trueFalseOptions">
             <label>
                 <input type="radio" name="answer" value="true">
                 True
@@ -79,24 +95,37 @@
         <!-- Submit Button -->
         <button id="submitAnswerBtn" onclick="submitAnswer()">Submit Answer</button>
 
+        <!-- Feedback -->
+        <div class="feedback" id="feedback" style="display: none;"></div>
+
         <!-- Save Options -->
         <div id="saveOptions" style="display: none;">
             <h2>Save to Your Fact Journal?</h2>
             <label for="comment">Add a comment (optional):</label><br>
             <textarea id="comment" rows="3" placeholder="Your thoughts..."></textarea><br>
             <div class="priority">
-                <button onclick="saveFact('high')">Save High Priority</button>
-                <button onclick="saveFact('low')">Save Low Priority</button>
+                <button id="saveHighBtn" onclick="saveFact('high')">Save High Priority</button>
+                <button id="saveLowBtn" onclick="saveFact('low')">Save Low Priority</button>
                 <button onclick="skipFact()">Don't Save</button>
             </div>
         </div>
 
-        <!-- Score -->
-        <p>Score: <span id="score">0</span></p>
+        <!-- Custom Score Name -->
+        <p>Quiz Score: <span id="quizScore">0</span></p>
 
         <!-- Fact Journal -->
         <h2>Fact Journal</h2>
         <div id="factList"></div>
+
+        <!-- Clear Data Section -->
+        <div id="clearField">
+            <label for="clearInput">Type "clear" to reset:</label>
+            <input type="text" id="clearInput">
+            <button onclick="clearData()">Clear</button>
+        </div>
+
+        <!-- Email Facts Button -->
+        <button onclick="emailFacts()">Email Facts</button>
 
     </div>
 
@@ -109,19 +138,23 @@
             { "id": 4, "statement": "The moon is made of cheese.", "is_true": false }
         ];
 
-        let score = parseInt(localStorage.getItem('score')) || 0;
+        let quizScore = parseInt(localStorage.getItem('quizScore')) || 0;
         const savedFacts = JSON.parse(localStorage.getItem('savedFacts')) || [];
         const askedFacts = JSON.parse(localStorage.getItem('askedFacts')) || [];
         let currentFactIndex = -1;
         let currentAnswerIsCorrect = false;
+        let factSaved = false;
 
-        // Load the next random fact, avoiding re-asked facts
+        // Load the next random fact, avoiding re-asked and saved facts
         function loadRandomFact() {
-            const availableFacts = facts.filter(fact => !askedFacts.includes(fact.id));
+            factSaved = false; // Reset save state
+            const availableFacts = facts.filter(fact => !askedFacts.includes(fact.id) && !savedFacts.some(savedFact => savedFact.id === fact.id));
 
             if (availableFacts.length === 0) {
+                // No more facts available
                 document.getElementById("factDisplay").textContent = "No more facts available!";
                 document.getElementById("submitAnswerBtn").classList.add("disabled");
+                document.getElementById("saveOptions").style.display = "none"; // Hide save options
                 return;
             }
 
@@ -130,8 +163,9 @@
             const factDisplay = document.getElementById("factDisplay");
             factDisplay.textContent = facts[currentFactIndex].statement;
 
-            // Hide the journal entry section
+            // Hide the journal entry section and feedback
             document.getElementById("saveOptions").style.display = "none";
+            document.getElementById("feedback").style.display = "none";
 
             // Clear previous selection and enable buttons
             const radios = document.querySelectorAll('input[name="answer"]');
@@ -144,7 +178,7 @@
             document.getElementById("submitAnswerBtn").classList.remove("disabled");
         }
 
-        // Submit Answer and ask if the fact should be saved
+        // Submit Answer and show feedback, ask if the fact should be saved
         function submitAnswer() {
             const selectedFact = facts[currentFactIndex];
             const userAnswer = document.querySelector('input[name="answer"]:checked')?.value;
@@ -156,23 +190,32 @@
 
             // Determine if the answer is correct
             currentAnswerIsCorrect = (userAnswer === 'true') === selectedFact.is_true;
+            const correctAnswerText = selectedFact.is_true ? "True" : "False";
+
+            const factDisplay = document.getElementById("factDisplay");
+            factDisplay.textContent = `${selectedFact.statement} (Correct answer: ${correctAnswerText})`;
+
+            // Show feedback: Right or Wrong
+            const feedback = document.getElementById("feedback");
+            feedback.textContent = currentAnswerIsCorrect ? "Right" : "Wrong";
+            feedback.style.display = "block";
+
+            // Adjust the score
             if (currentAnswerIsCorrect) {
-                score++;
+                quizScore++;
             } else {
-                score--;
+                quizScore--;
             }
 
-            alert(currentAnswerIsCorrect ? "Correct!" : "Incorrect!");
-
             // Update score in localStorage and on the page
-            localStorage.setItem('score', score);
-            document.getElementById("score").textContent = score;
+            localStorage.setItem('quizScore', quizScore);
+            document.getElementById("quizScore").textContent = quizScore;
 
             // Mark the fact as asked
             askedFacts.push(selectedFact.id);
             localStorage.setItem('askedFacts', JSON.stringify(askedFacts));
 
-            // Show the save options
+            // Show the save options only if there are more facts available
             document.getElementById("saveOptions").style.display = "block";
 
             // Keep the selected button pressed and disable others
@@ -183,30 +226,54 @@
             document.getElementById("submitAnswerBtn").classList.add("disabled");
         }
 
-        // Save fact to journal
+        // Save fact to journal (prevent multiple saves)
         function saveFact(priority) {
+            if (factSaved) return; // Prevent multiple saves
+
             const comment = document.getElementById("comment").value;
             const selectedFact = facts[currentFactIndex];
 
             const savedFact = {
+                id: selectedFact.id,
                 fact: selectedFact.statement,
+                is_true: selectedFact.is_true ? "True Fact" : "False Fact",
                 comment: comment || null,
-                priority: priority,
-                correct: currentAnswerIsCorrect ? "Right" : "Wrong"
+                priority: priority
             };
 
             savedFacts.push(savedFact);
             localStorage.setItem('savedFacts', JSON.stringify(savedFacts));
 
-            // Clear comment field and load a new random fact
-            document.getElementById("comment").value = '';
-            loadRandomFact();
+            factSaved = true; // Mark as saved to prevent re-saving
+
+            // Ensure the last fact gets saved to the journal before quiz ends
             renderSavedFacts();
+
+            // Now check if all facts are answered
+            const availableFacts = facts.filter(fact => !askedFacts.includes(fact.id) && !savedFacts.some(savedFact => savedFact.id === fact.id));
+            if (availableFacts.length === 0) {
+                // No more facts available
+                document.getElementById("factDisplay").textContent = "No more facts available!";
+                document.getElementById("submitAnswerBtn").classList.add("disabled");
+                document.getElementById("saveOptions").style.display = "none"; // Hide save options
+            } else {
+                // Clear comment field and load a new random fact
+                document.getElementById("comment").value = '';
+                loadRandomFact();
+            }
         }
 
         // Skip fact without saving
         function skipFact() {
-            loadRandomFact();
+            const availableFacts = facts.filter(fact => !askedFacts.includes(fact.id) && !savedFacts.some(savedFact => savedFact.id === fact.id));
+            if (availableFacts.length === 0) {
+                // No more facts available
+                document.getElementById("factDisplay").textContent = "No more facts available!";
+                document.getElementById("submitAnswerBtn").classList.add("disabled");
+                document.getElementById("saveOptions").style.display = "none"; // Hide save options
+            } else {
+                loadRandomFact();
+            }
         }
 
         // Render saved facts in the journal, grouped by priority
@@ -235,16 +302,42 @@
             const listItem = document.createElement("div");
             listItem.innerHTML = `
                 <strong>Fact:</strong> ${fact.fact}<br>
+                <strong>${fact.is_true}</strong><br>
                 ${fact.comment ? `<strong>Comment:</strong> ${fact.comment}<br>` : ''}
-                <strong>Priority:</strong> ${fact.priority}<br>
-                <strong>Answer:</strong> ${fact.correct}<br><br>
+                <strong>Priority:</strong> ${fact.priority}<br><br>
             `;
             container.appendChild(listItem);
         }
 
+        // Clear all data if user types 'clear'
+        function clearData() {
+            const input = document.getElementById("clearInput").value;
+            if (input.toLowerCase() === 'clear') {
+                localStorage.removeItem('quizScore');
+                localStorage.removeItem('savedFacts');
+                localStorage.removeItem('askedFacts');
+                window.location.reload(); // Reload the page to reset everything
+            } else {
+                alert("Please type 'clear' to reset.");
+            }
+        }
+
+        // Email the saved facts
+        function emailFacts() {
+            const emailBody = savedFacts.map(fact => `
+                Fact: ${fact.fact}
+                ${fact.is_true}
+                Comment: ${fact.comment || "No comment"}
+                Priority: ${fact.priority}
+            `).join("\n\n");
+
+            const mailtoLink = `mailto:?subject=Your%20Saved%20Facts&body=${encodeURIComponent(emailBody)}`;
+            window.location.href = mailtoLink;
+        }
+
         // Initialize page
         window.onload = function() {
-            document.getElementById("score").textContent = score;
+            document.getElementById("quizScore").textContent = quizScore;
             loadRandomFact();
             renderSavedFacts();
         };
