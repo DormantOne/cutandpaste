@@ -132,11 +132,28 @@
     <script>
         // Facts database
         const facts = [
-            { "id": 1, "statement": "The earth revolves around the sun.", "is_true": true },
-            { "id": 2, "statement": "Humans can breathe underwater without assistance.", "is_true": false },
-            { "id": 3, "statement": "Water boils at 100°C.", "is_true": true },
-            { "id": 4, "statement": "The moon is made of cheese.", "is_true": false }
-        ];
+    { "id": 1, "statement": "COVID-19 is a seasonal virus.", "is_true": false },
+    { "id": 2, "statement": "New pneumococcal vaccines are designed to provide long-term protection with just one dose.", "is_true": true },
+    { "id": 3, "statement": "RSV vaccines are recommended for individuals aged 60 and above with underlying conditions.", "is_true": true },
+    { "id": 4, "statement": "Hepatitis A and B vaccines are routinely given during pregnancy.", "is_true": false },
+    { "id": 5, "statement": "Vaccination is more effective in preventing long COVID compared to prior infection.", "is_true": true },
+    { "id": 6, "statement": "It is recommended to give flu vaccines to older adults early in September for optimal protection.", "is_true": false },
+    { "id": 7, "statement": "The COVID-19 vaccine can be given as early as five days after recovering from infection.", "is_true": true },
+    { "id": 8, "statement": "UPMC is using the Pfizer COVID-19 vaccine at all primary care offices.", "is_true": false },
+    { "id": 9, "statement": "A severe local reaction after vaccination guarantees higher antibody levels.", "is_true": false },
+    { "id": 10, "statement": "Flu vaccines help prevent cardiovascular events such as heart attacks and strokes.", "is_true": true },
+    { "id": 11, "statement": "Tdap vaccination during pregnancy should be given between 27-36 weeks for optimal effectiveness.", "is_true": true },
+    { "id": 12, "statement": "UPMC will use FluBlock for people aged 50 and older.", "is_true": true },
+    { "id": 13, "statement": "COVID-19 vaccinations will likely be needed every 6-12 months moving forward.", "is_true": true },
+    { "id": 14, "statement": "RSV vaccines are officially recommended for routine use in people aged 60 and older.", "is_true": false },
+    { "id": 15, "statement": "There has been a 14% increase in overall adult vaccination rates since COVID-19.", "is_true": false },
+    { "id": 16, "statement": "HPV vaccines are recommended for both men and women up to age 45.", "is_true": true },
+    { "id": 17, "statement": "Flu vaccines given during the third trimester of pregnancy help pass antibodies to infants.", "is_true": true },
+    { "id": 18, "statement": "UPMC recommends PCV 21 for adults due to its superior coverage of pneumococcal strains.", "is_true": true },
+    { "id": 19, "statement": "Reporting serious vaccine side effects to VAERS is required by law.", "is_true": true },
+    { "id": 20, "statement": "RSV types A and B change frequently, requiring annual vaccination.", "is_true": false }
+];
+
 
         let quizScore = parseInt(localStorage.getItem('quizScore')) || 0;
         const savedFacts = JSON.parse(localStorage.getItem('savedFacts')) || [];
