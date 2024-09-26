@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interstitials Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .fact-box {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+        .options label {
+            margin-right: 10px;
+        }
+        textarea {
+            width: 100%;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px;
+            border: none;
+            background-color: #28a745;
+            color: white;
+            font-size: 1em;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        h2 {
+            margin-top: 40px;
+        }
+        .priority {
+            display: flex;
+            justify-content: space-between;
+        }
+        #factList h3 {
+            margin-top: 20px;
+        }
+        .disabled {
+            background-color: #c8c8c8;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Interstitials Quiz</h1>
+
+        <!-- Fact Display -->
+        <div class="fact-box" id="factDisplay"></div>
+
+        <!-- True or False -->
+        <div class="options">
+            <label>
+                <input type="radio" name="answer" value="true">
+                True
+            </label>
+            <label>
+                <input type="radio" name="answer" value="false">
+                False
+            </label>
+        </div>
+
+        <!-- Submit Button -->
+        <button id="submitAnswerBtn" onclick="submitAnswer()">Submit Answer</button>
+
+        <!-- Save Options -->
+        <div id="saveOptions" style="display: none;">
+            <h2>Save to Your Fact Journal?</h2>
+            <label for="comment">Add a comment (optional):</label><br>
+            <textarea id="comment" rows="3" placeholder="Your thoughts..."></textarea><br>
+            <div class="priority">
+                <button onclick="saveFact('high')">Save High Priority</button>
+                <button onclick="saveFact('low')">Save Low Priority</button>
+                <button onclick="skipFact()">Don't Save</button>
+            </div>
+        </div>
+
+        <!-- Score -->
+        <p>Score: <span id="score">0</span></p>
+
+        <!-- Fact Journal -->
+        <h2>Fact Journal</h2>
+        <div id="factList"></div>
+
+    </div>
+
+    <script>
+        // Facts database
+        const facts = [
+            { "id": 1, "statement": "The earth revolves around the sun.", "is_true": true },
+            { "id": 2, "statement": "Humans can breathe underwater without assistance.", "is_true": false },
+            { "id": 3, "statement": "Water boils at 100°C.", "is_true": true },
+            { "id": 4, "statement": "The moon is made of cheese.", "is_true": false }
+        ];
+
+        let score = parseInt(localStorage.getItem('score')) || 0;
+        const savedFacts = JSON.parse(localStorage.getItem('savedFacts')) || [];
+        const askedFacts = JSON.parse(localStorage.getItem('askedFacts')) || [];
+        let currentFactIndex = -1;
+        let currentAnswerIsCorrect = false;
+
+        // Load the next random fact, avoiding re-asked facts
+        function loadRandomFact() {
+            const availableFacts = facts.filter(fact => !askedFacts.includes(fact.id));
+
+            if (availableFacts.length === 0) {
+                document.getElementById("factDisplay").textContent = "No more facts available!";
+                document.getElementById("submitAnswerBtn").classList.add("disabled");
+                return;
+            }
+
+            const randomIndex = Math.floor(Math.random() * availableFacts.length);
+            currentFactIndex = facts.findIndex(fact => fact.id === availableFacts[randomIndex].id);
+            const factDisplay = document.getElementById("factDisplay");
+            factDisplay.textContent = facts[currentFactIndex].statement;
+
+            // Hide the journal entry section
+            document.getElementById("saveOptions").style.display = "none";
+
+            // Clear previous selection and enable buttons
+            const radios = document.querySelectorAll('input[name="answer"]');
+            radios.forEach(radio => {
+                radio.checked = false;
+                radio.disabled = false;
+            });
+
+            // Enable submit button
+            document.getElementById("submitAnswerBtn").classList.remove("disabled");
+        }
+
+        // Submit Answer and ask if the fact should be saved
+        function submitAnswer() {
+            const selectedFact = facts[currentFactIndex];
+            const userAnswer = document.querySelector('input[name="answer"]:checked')?.value;
+
+            if (!userAnswer) {
+                alert("Please select True or False.");
+                return;
+            }
+
+            // Determine if the answer is correct
+            currentAnswerIsCorrect = (userAnswer === 'true') === selectedFact.is_true;
+            if (currentAnswerIsCorrect) {
+                score++;
+            } else {
+                score--;
+            }
+
+            alert(currentAnswerIsCorrect ? "Correct!" : "Incorrect!");
+
+            // Update score in localStorage and on the page
+            localStorage.setItem('score', score);
+            document.getElementById("score").textContent = score;
+
+            // Mark the fact as asked
+            askedFacts.push(selectedFact.id);
+            localStorage.setItem('askedFacts', JSON.stringify(askedFacts));
+
+            // Show the save options
+            document.getElementById("saveOptions").style.display = "block";
+
+            // Keep the selected button pressed and disable others
+            const radios = document.querySelectorAll('input[name="answer"]');
+            radios.forEach(radio => radio.disabled = true);
+
+            // Disable submit button
+            document.getElementById("submitAnswerBtn").classList.add("disabled");
+        }
+
+        // Save fact to journal
+        function saveFact(priority) {
+            const comment = document.getElementById("comment").value;
+            const selectedFact = facts[currentFactIndex];
+
+            const savedFact = {
+                fact: selectedFact.statement,
+                comment: comment || null,
+                priority: priority,
+                correct: currentAnswerIsCorrect ? "Right" : "Wrong"
+            };
+
+            savedFacts.push(savedFact);
+            localStorage.setItem('savedFacts', JSON.stringify(savedFacts));
+
+            // Clear comment field and load a new random fact
+            document.getElementById("comment").value = '';
+            loadRandomFact();
+            renderSavedFacts();
+        }
+
+        // Skip fact without saving
+        function skipFact() {
+            loadRandomFact();
+        }
+
+        // Render saved facts in the journal, grouped by priority
+        function renderSavedFacts() {
+            const factList = document.getElementById("factList");
+            factList.innerHTML = '';
+
+            const highPriorityFacts = savedFacts.filter(fact => fact.priority === 'high');
+            const lowPriorityFacts = savedFacts.filter(fact => fact.priority === 'low');
+
+            // Display High Priority Facts
+            if (highPriorityFacts.length > 0) {
+                factList.innerHTML += '<h3>High Priority</h3>';
+                highPriorityFacts.forEach(fact => renderFact(factList, fact));
+            }
+
+            // Display Low Priority Facts
+            if (lowPriorityFacts.length > 0) {
+                factList.innerHTML += '<h3>Low Priority</h3>';
+                lowPriorityFacts.forEach(fact => renderFact(factList, fact));
+            }
+        }
+
+        // Helper function to render each fact
+        function renderFact(container, fact) {
+            const listItem = document.createElement("div");
+            listItem.innerHTML = `
+                <strong>Fact:</strong> ${fact.fact}<br>
+                ${fact.comment ? `<strong>Comment:</strong> ${fact.comment}<br>` : ''}
+                <strong>Priority:</strong> ${fact.priority}<br>
+                <strong>Answer:</strong> ${fact.correct}<br><br>
+            `;
+            container.appendChild(listItem);
+        }
+
+        // Initialize page
+        window.onload = function() {
+            document.getElementById("score").textContent = score;
+            loadRandomFact();
+            renderSavedFacts();
+        };
+    </script>
+</body>
+</html>
