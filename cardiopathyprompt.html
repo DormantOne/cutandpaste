@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Copy Vaccine Prompt</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: left;
+            padding: 20px;
+            font-size: 16px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        p {
+            margin-bottom: 10px;
+        }
+        #copyButton {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        #copyButton:hover {
+            background-color: #45a049;
+        }
+        #copyButton.copied {
+            background-color: #388E3C;
+        }
+        #promptText {
+            font-size: 12px; /* Very small font */
+            color: #555;
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #eef;
+            border: 1px solid #ccd;
+            border-radius: 5px;
+            white-space: pre-wrap; /* Preserve formatting */
+            overflow-wrap: break-word; /* Prevent long words from overflowing */
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        ul li {
+            margin-bottom: 8px;
+        }
+        ul li a {
+            color: #1a0dab;
+            text-decoration: none;
+        }
+        ul li a:hover {
+            text-decoration: underline;
+        }
+        /* Optional: Clear Cache/Memory Button Styles */
+        #clearCacheButton {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+        #clearCacheButton:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Vaccine Prompt Now on Your Clipboard - If You Approved</h1>
+    <p>Use one of the following AI chatbots to discuss vaccine efficacy based on the prompt:</p>
+    <p>You have to paste it in, of course - but it is on your clipboard now to paste in.</p>
+    
+    <!-- Copy to Clipboard Button -->
+    <button id="copyButton" aria-label="Copy Vaccine Prompt to Clipboard">Copy Vaccine Prompt to Clipboard</button>
+    
+    <!-- Instruction for Users -->
+    <p>Copy this text below if the button doesn't work:</p>
+    
+    <!-- Text to be Copied, Displayed in Very Small Font -->
+    <div id="promptText">
+Please review the article abstract focusing on:
+Study design and methodology.
+Statistical robustness.
+Interpretation of outcomes.
+Broader implications for stroke prevention in patients with atrial cardiopathy. 
+    </div>
+    
+    <!-- AI Chatbot Links -->
+    <ul>
+        <li><a href="https://www.bing.com/chat" target="_blank">Microsoft Copilot</a></li>
+        <li><a href="https://chat.openai.com/" target="_blank">ChatGPT by OpenAI</a></li>
+        <li><a href="https://claude.ai/" target="_blank">Claude by Anthropic</a></li>
+        <li><a href="https://gemini.google.com/" target="_blank">Gemini</a></li> <!-- Replace with correct URL if necessary -->
+        <li><a href="https://www.perplexity.ai/" target="_blank">Perplexity AI</a></li>
+        <li><a href="https://www.openevidence.com/" target="_blank">Open Evidence</a></li>
+    </ul>
+    
+    <!-- Optional: Clear Cache/Memory Button -->
+    <button id="clearCacheButton">Clear Cache / Memory</button>
+    
+    <!-- Scripts -->
+    <script>
+        // The text to be copied
+        const blockOfText = `Please provide an AI review of the following clinical trial, focusing on the key points of the study design, methodology, statistical rigor, and outcomes:
+
+Title: "Apixaban to Prevent Recurrence After Cryptogenic Stroke in Patients With Atrial Cardiopathy: The ARCADIA Randomized Clinical Trial"
+
+Importance:
+Atrial cardiopathy is associated with stroke in the absence of clinically apparent atrial fibrillation. It is unknown whether anticoagulation, which has proven beneficial in atrial fibrillation, can prevent stroke in patients with atrial cardiopathy but no atrial fibrillation.
+
+Objective:
+To compare anticoagulation (apixaban) with antiplatelet therapy (aspirin) for secondary stroke prevention in patients with cryptogenic stroke and atrial cardiopathy but without atrial fibrillation.
+
+Design:
+This multicenter, double-blind, phase 3 randomized clinical trial included 1015 participants with cryptogenic stroke and evidence of atrial cardiopathy (P-wave terminal force >5000 µV×ms, NT-proBNP >250 pg/mL, or left atrial diameter index ≥3 cm/m²). Participants were randomized to receive apixaban (5 mg or 2.5 mg twice daily, n = 507) or aspirin (81 mg once daily, n = 508). The trial was conducted at 185 sites from February 2018 to February 2023.
+
+Main Outcomes:
+Primary efficacy outcome: Recurrent stroke.
+Primary safety outcomes: Symptomatic intracranial hemorrhage and other major hemorrhages.
+Results:
+Recurrent stroke occurred in 40 patients in both the apixaban and aspirin groups (annualized rate 4.4%, hazard ratio 1.00, 95% CI 0.64-1.55).
+Symptomatic intracranial hemorrhage occurred in 0 patients in the apixaban group and in 7 patients in the aspirin group (annualized rate 1.1%).
+Other major hemorrhages occurred in 5 patients in each group (hazard ratio 1.02, 95% CI 0.29-3.52).
+After a mean follow-up of 1.8 years, the trial was stopped early due to futility in preventing recurrent strokes.
+Conclusions:
+In patients with cryptogenic stroke and atrial cardiopathy without atrial fibrillation, apixaban did not significantly reduce the risk of recurrent stroke compared with aspirin. The study suggests that anticoagulation may not provide additional benefit over antiplatelet therapy in this population.
+
+Request:
+Please review the abstract focusing on:
+
+Study design and methodology.
+Statistical robustness.
+Interpretation of outcomes.
+Broader implications for stroke prevention in patients with atrial cardiopathy.`;
+
+        // Function to copy text to clipboard
+        function copyToClipboard(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                return navigator.clipboard.writeText(text);
+            } else {
+                // Fallback method
+                return new Promise((resolve, reject) => {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = text;
+                    // Prevent scrolling to bottom
+                    textArea.style.position = "fixed";
+                    textArea.style.top = "0";
+                    textArea.style.left = "0";
+                    textArea.style.width = "2em";
+                    textArea.style.height = "2em";
+                    textArea.style.padding = "0";
+                    textArea.style.border = "none";
+                    textArea.style.outline = "none";
+                    textArea.style.boxShadow = "none";
+                    textArea.style.background = "transparent";
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    try {
+                        const successful = document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        if (successful) {
+                            resolve();
+                        } else {
+                            reject(new Error('Fallback: Copy command was unsuccessful'));
+                        }
+                    } catch (err) {
+                        document.body.removeChild(textArea);
+                        console.error('Fallback: Oops, unable to copy', err);
+                        reject(err);
+                    }
+                });
+            }
+        }
+
+        // Handle copy button click
+        document.getElementById('copyButton').addEventListener('click', () => {
+            copyToClipboard(blockOfText).then(() => {
+                // Success: Provide subtle visual feedback
+                const copyBtn = document.getElementById('copyButton');
+                copyBtn.innerText = "Copied!";
+                copyBtn.classList.add('copied');
+                setTimeout(() => {
+                    copyBtn.innerText = "Copy Vaccine Prompt to Clipboard";
+                    copyBtn.classList.remove('copied');
+                }, 2000); // Reset after 2 seconds
+            }).catch(err => {
+                // Failure: Log error (no alert)
+                console.error('Error copying text: ', err);
+                // Optionally, you can change button appearance to indicate failure
+            });
+        });
+
+        // Handle Clear Cache/Memory button click (Optional)
+        document.getElementById('clearCacheButton').addEventListener('click', () => {
+            if (window.caches) {
+                caches.keys().then(names => {
+                    for (let name of names) {
+                        caches.delete(name);
+                    }
+                }).catch(err => {
+                    console.error('Error deleting caches: ', err);
+                });
+            }
+            localStorage.clear();
+            // Optionally, provide visual feedback
+            const clearBtn = document.getElementById('clearCacheButton');
+            clearBtn.innerText = "Cleared!";
+            clearBtn.disabled = true;
+            setTimeout(() => {
+                clearBtn.innerText = "Clear Cache / Memory";
+                clearBtn.disabled = false;
+            }, 2000); // Reset after 2 seconds
+        });
+    </script>
+
+</body>
+</html>
