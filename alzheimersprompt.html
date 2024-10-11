@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Alzheimer's Disease Grand Rounds Prompt</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: left;
+            padding: 20px;
+            font-size: 16px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        p {
+            margin-bottom: 10px;
+        }
+
+        #copyButton {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        #copyButton:hover {
+            background-color: #45a049;
+        }
+
+        #copyButton.copied {
+            background-color: #388E3C;
+        }
+
+        #promptText {
+            font-size: 12px; /* Very small font */
+            color: #555;
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #eef;
+            border: 1px solid #ccd;
+            border-radius: 5px;
+            white-space: pre-wrap; /* Preserve formatting */
+            overflow-wrap: break-word; /* Prevent long words from overflowing */
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        ul li {
+            margin-bottom: 8px;
+        }
+
+        ul li a {
+            color: #1a0dab;
+            text-decoration: none;
+        }
+
+        ul li a:hover {
+            text-decoration: underline;
+        }
+
+        #clearCacheButton {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+
+        #clearCacheButton:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Grand Rounds Prompt: Alzheimer's Disease Treatment and Trials</h1>
+    <p>Use one of the following AI chatbots to discuss the Grand Rounds topic based on the prompt:</p>
+    <p>The prompt has been copied to your clipboard! You can paste it into your preferred AI chat to start the discussion.</p>
+
+    <!-- Copy to Clipboard Button -->
+    <button id="copyButton" aria-label="Copy Alzheimer's Disease Prompt to Clipboard">Copy Alzheimer's Disease Prompt to Clipboard</button>
+
+    <!-- Instruction for Users -->
+    <p>If the button doesn't work, copy the text manually below:</p>
+
+    <!-- Text to be Copied, Displayed in Very Small Font -->
+    <div id="promptText">
+        Question: "What are the latest advancements in disease-modifying therapies for Alzheimer's, and how do anti-amyloid treatments like Aducanumab and Lecanemab impact disease progression and patient outcomes? Also, where can patients find ongoing clinical trials for these treatments?"
+
+        Importance:
+        Alzheimer's disease remains a major health challenge, and recent FDA approvals of anti-amyloid therapies have provided new hope for slowing disease progression. However, these treatments, such as Aducanumab, Lecanemab, and Donanemab, come with potential side effects like ARIA (Amyloid-Related Imaging Abnormalities). It's crucial to understand the risks, benefits, and the real-world implications of these therapies, along with opportunities for patient enrollment in clinical trials.
+
+        Objective:
+        To explore the effectiveness and risks of disease-modifying therapies for Alzheimer's disease, and identify ongoing clinical trials or programs offering access to these treatments.
+
+        Points to Consider:
+        - The mechanism by which anti-amyloid therapies slow Alzheimer's disease progression.
+        - Safety concerns related to treatments like ARIA and the need for careful patient selection.
+        - How physicians and patients can locate clinical trials for these disease-modifying therapies.
+    </div>
+
+    <!-- AI Chatbot Links -->
+    <ul>
+        <li><a href="https://www.bing.com/chat" target="_blank"><u>Click here to talk to: Microsoft Copilot</u></a></li>
+        <li><a href="https://chat.openai.com/" target="_blank"><u>Click here to talk to: ChatGPT by OpenAI</u></a></li>
+        <li><a href="https://claude.ai/" target="_blank"><u>Click here to talk to: Claude by Anthropic</u></a></li>
+        <li><a href="https://gemini.google.com/" target="_blank"><u>Click here to talk to: Gemini</u></a></li> <!-- Replace with correct URL if necessary -->
+        <li><a href="https://www.perplexity.ai/" target="_blank"><u>Click here to talk to: Perplexity AI</u></a></li>
+        <li><a href="https://www.openevidence.com/" target="_blank"><u>Click here to talk to: Open Evidence</u></a></li>
+    </ul>
+
+    <!-- Optional: Clear Cache/Memory Button -->
+    <button id="clearCacheButton">Clear Cache / Memory</button>
+
+    <!-- Scripts -->
+    <script>
+        // The text to be copied
+        const blockOfText = `Question: "What are the latest advancements in disease-modifying therapies for Alzheimer's, and how do anti-amyloid treatments like Aducanumab and Lecanemab impact disease progression and patient outcomes? Also, where can patients find ongoing clinical trials for these treatments?"
+
+Importance:
+Alzheimer's disease remains a major health challenge, and recent FDA approvals of anti-amyloid therapies have provided new hope for slowing disease progression. However, these treatments, such as Aducanumab, Lecanemab, and Donanemab, come with potential side effects like ARIA (Amyloid-Related Imaging Abnormalities). It's crucial to understand the risks, benefits, and the real-world implications of these therapies, along with opportunities for patient enrollment in clinical trials.
+
+Objective:
+To explore the effectiveness and risks of disease-modifying therapies for Alzheimer's disease, and identify ongoing clinical trials or programs offering access to these treatments.
+
+Points to Consider:
+- The mechanism by which anti-amyloid therapies slow Alzheimer's disease progression.
+- Safety concerns related to treatments like ARIA and the need for careful patient selection.
+- How physicians and patients can locate clinical trials for these disease-modifying therapies.`;
+
+        // Function to copy text to clipboard
+        function copyToClipboard(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                return navigator.clipboard.writeText(text);
+            } else {
+                // Fallback method
+                return new Promise((resolve, reject) => {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = text;
+                    // Prevent scrolling to bottom
+                    textArea.style.position = "fixed";
+                    textArea.style.top = "0";
+                    textArea.style.left = "0";
+                    textArea.style.width = "2em";
+                    textArea.style.height = "2em";
+                    textArea.style.padding = "0";
+                    textArea.style.border = "none";
+                    textArea.style.outline = "none";
+                    textArea.style.boxShadow = "none";
+                    textArea.style.background = "transparent";
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    try {
+                        const successful = document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        if (successful) {
+                            resolve();
+                        } else {
+                            reject(new Error('Fallback: Copy command was unsuccessful'));
+                        }
+                    } catch (err) {
+                        document.body.removeChild(textArea);
+                        console.error('Fallback: Oops, unable to copy', err);
+                        reject(err);
+                    }
+                });
+            }
+        }
+
+        // Handle copy button click
+        document.getElementById('copyButton').addEventListener('click', () => {
+            copyToClipboard(blockOfText).then(() => {
+                // Success: Provide subtle visual feedback
+                const copyBtn = document.getElementById('copyButton');
+                copyBtn.innerText = "Copied!";
+                copyBtn.classList.add('copied');
+                setTimeout(() => {
+                    copyBtn.innerText = "Copy Alzheimer's Disease Prompt to Clipboard";
+                    copyBtn.classList.remove('copied');
+                }, 2000); // Reset after 2 seconds
+            }).catch(err => {
+                // Failure: Log error (no alert)
+                console.error('Error copying text: ', err);
+                // Optionally, you can change button appearance to indicate failure
+            });
+        });
+
+        // Handle Clear Cache/Memory button click (Optional)
+        document.getElementById('clearCacheButton').addEventListener('click', () => {
+            if (window.caches) {
+                caches.keys().then(names => {
+                    for (let name of names) {
+                        caches.delete(name);
+                    }
+                }).catch(err => {
+                    console.error('Error deleting caches: ', err);
+                });
+            }
+            localStorage.clear();
+            // Optionally, provide visual feedback
+            const clearBtn = document.getElementById('clearCacheButton');
+            clearBtn.innerText = "Cleared!";
+            clearBtn.disabled = true;
+            setTimeout(() => {
+                clearBtn.innerText = "Clear Cache / Memory";
+                clearBtn.disabled = false;
+            }, 2000); // Reset after 2 seconds
+        });
+    </script>
+
+</body>
+</html>
