@@ -12,47 +12,39 @@
             padding: 20px;
             background-color: #f5f5f5;
         }
-
         .standings {
             background: white;
             border-radius: 8px;
             padding: 20px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
         }
-
         th, td {
             padding: 12px;
             text-align: left;
             border-bottom: 1px solid #ddd;
         }
-
         th {
             background-color: #041e42;
             color: white;
         }
-
         tr:hover {
             background-color: #f8f8f8;
         }
-
         .loading {
             text-align: center;
             padding: 20px;
             font-style: italic;
             color: #666;
         }
-
         h1 {
             color: #041e42;
             text-align: center;
         }
-
         .error {
             color: red;
             text-align: center;
@@ -67,43 +59,49 @@
     </div>
 
     <script>
+        const WORKER_URL = 'YOUR_WORKER_URL'; // You'll replace this with your actual worker URL
+
         async function fetchStandings() {
             const standingsDiv = document.getElementById('standings');
-
+            
             try {
-                const response = await fetch('https://api.nhle.com/stats/rest/en/standings/now');
+                const response = await fetch(WORKER_URL);
                 const data = await response.json();
-
-                standingsDiv.innerHTML = ''; // Clear loading message
-
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to fetch standings');
+                }
+                
+                standingsDiv.innerHTML = '';
+                
                 const table = document.createElement('table');
                 table.innerHTML = `
-                        <tr>
-                            <th>Team</th>
-                            <th>GP</th>
-                            <th>W</th>
-                            <th>L</th>
-                            <th>OT</th>
-                            <th>PTS</th>
-                            <th>GF</th>
-                            <th>GA</th>
-                            <th>DIFF</th>
-                        </tr>
-                    `;
+                    <tr>
+                        <th>Team</th>
+                        <th>GP</th>
+                        <th>W</th>
+                        <th>L</th>
+                        <th>OT</th>
+                        <th>PTS</th>
+                        <th>GF</th>
+                        <th>GA</th>
+                        <th>DIFF</th>
+                    </tr>
+                `;
 
                 data.standings.forEach(team => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                            <td>${team.teamName.default}</td>
-                            <td>${team.gamesPlayed}</td>
-                            <td>${team.wins}</td>
-                            <td>${team.losses}</td>
-                            <td>${team.otLosses}</td>
-                            <td>${team.points}</td>
-                            <td>${team.goalsFor}</td>
-                            <td>${team.goalsAgainst}</td>
-                            <td>${team.goalsFor - team.goalsAgainst}</td>
-                        `;
+                        <td>${team.teamName.default}</td>
+                        <td>${team.gamesPlayed}</td>
+                        <td>${team.wins}</td>
+                        <td>${team.losses}</td>
+                        <td>${team.otLosses}</td>
+                        <td>${team.points}</td>
+                        <td>${team.goalsFor}</td>
+                        <td>${team.goalsAgainst}</td>
+                        <td>${team.goalsFor - team.goalsAgainst}</td>
+                    `;
                     table.appendChild(row);
                 });
 
