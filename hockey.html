@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NHL Standings</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .standings {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #041e42;
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #f8f8f8;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #666;
+        }
+
+        h1 {
+            color: #041e42;
+            text-align: center;
+        }
+
+        .error {
+            color: red;
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>NHL Standings</h1>
+    <div class="standings" id="standings">
+        <div class="loading">Loading standings...</div>
+    </div>
+
+    <script>
+        async function fetchStandings() {
+            const standingsDiv = document.getElementById('standings');
+
+            try {
+                const response = await fetch('https://api.nhle.com/stats/rest/en/standings/now');
+                const data = await response.json();
+
+                standingsDiv.innerHTML = ''; // Clear loading message
+
+                const table = document.createElement('table');
+                table.innerHTML = `
+                        <tr>
+                            <th>Team</th>
+                            <th>GP</th>
+                            <th>W</th>
+                            <th>L</th>
+                            <th>OT</th>
+                            <th>PTS</th>
+                            <th>GF</th>
+                            <th>GA</th>
+                            <th>DIFF</th>
+                        </tr>
+                    `;
+
+                data.standings.forEach(team => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                            <td>${team.teamName.default}</td>
+                            <td>${team.gamesPlayed}</td>
+                            <td>${team.wins}</td>
+                            <td>${team.losses}</td>
+                            <td>${team.otLosses}</td>
+                            <td>${team.points}</td>
+                            <td>${team.goalsFor}</td>
+                            <td>${team.goalsAgainst}</td>
+                            <td>${team.goalsFor - team.goalsAgainst}</td>
+                        `;
+                    table.appendChild(row);
+                });
+
+                standingsDiv.appendChild(table);
+            } catch (error) {
+                standingsDiv.innerHTML = `<div class="error">Error loading standings: ${error.message}</div>`;
+                console.error('Error:', error);
+            }
+        }
+
+        // Fetch standings when page loads
+        fetchStandings();
+    </script>
+</body>
+</html>
