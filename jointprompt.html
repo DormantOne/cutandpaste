@@ -13,16 +13,13 @@
             background-color: #f9f9f9;
             color: #333;
         }
-
         h1 {
             font-size: 24px;
             margin-bottom: 15px;
         }
-
         p {
             margin-bottom: 10px;
         }
-
         #copyButton {
             padding: 10px 20px;
             background-color: #4CAF50;
@@ -33,15 +30,12 @@
             font-size: 16px;
             transition: background-color 0.3s ease;
         }
-
-            #copyButton:hover {
-                background-color: #45a049;
-            }
-
-            #copyButton.copied {
-                background-color: #388E3C;
-            }
-
+        #copyButton:hover {
+            background-color: #45a049;
+        }
+        #copyButton.copied {
+            background-color: #388E3C;
+        }
         #promptText {
             font-size: 12px;
             color: #555;
@@ -53,25 +47,20 @@
             white-space: pre-wrap;
             overflow-wrap: break-word;
         }
-
         ul {
             list-style-type: none;
             padding-left: 0;
         }
-
-            ul li {
-                margin-bottom: 8px;
-            }
-
-                ul li a {
-                    color: #1a0dab;
-                    text-decoration: none;
-                }
-
-                    ul li a:hover {
-                        text-decoration: underline;
-                    }
-
+        ul li {
+            margin-bottom: 8px;
+        }
+        ul li a {
+            color: #1a0dab;
+            text-decoration: none;
+        }
+        ul li a:hover {
+            text-decoration: underline;
+        }
         #clearCacheButton {
             margin-top: 20px;
             padding: 10px 20px;
@@ -83,33 +72,26 @@
             font-size: 14px;
             transition: background-color 0.3s ease;
         }
-
-            #clearCacheButton:hover {
-                background-color: #d32f2f;
-            }
+        #clearCacheButton:hover {
+            background-color: #d32f2f;
+        }
     </style>
 </head>
 <body>
-
-    <h1>Joint Health Prompt Now on Your Clipboard - If You Approved</h1>
-    <p>Use one of the following AI chatbots to explore advancements in hip and knee arthritis management based on the prompt:</p>
-    <p>You have to paste it in, of course - but it is on your clipboard now to paste in.</p>
+    <h1>Joint Health Query</h1>
+    <p>Copy and paste this prompt into any of the AI chatbots below:</p>
 
     <button id="copyButton" aria-label="Copy Joint Health Prompt to Clipboard">Copy Joint Health Prompt to Clipboard</button>
 
-    <p>Copy this text below if the button doesn't work:</p>
+    <div id="promptText">Analyze and summarize current best practices in hip and knee arthritis management for primary care providers, focusing on the evolution from traditional to modern approaches. Address: (1) evidence-based treatment algorithms, including proper sequencing of conservative therapies, (2) updates in injection therapies (comparing steroid, hyaluronic acid, and PRP outcomes), (3) modern surgical approaches (particularly anterior vs. posterior hip replacement and patellar retention in knee replacement), and (4) changing perspectives on antibiotic prophylaxis post-replacement. Create a decision-support framework for primary care providers that includes:
 
-    <div id="promptText">
-        Analyze and summarize current best practices in hip and knee arthritis management for primary care providers, focusing on the evolution from traditional to modern approaches. Address: (1) evidence-based treatment algorithms, including proper sequencing of conservative therapies, (2) updates in injection therapies (comparing steroid, hyaluronic acid, and PRP outcomes), (3) modern surgical approaches (particularly anterior vs. posterior hip replacement and patellar retention in knee replacement), and (4) changing perspectives on antibiotic prophylaxis post-replacement. Create a decision-support framework for primary care providers that includes:
+- A stepwise treatment algorithm with specific criteria for progression
+- Evidence-based comparison table of injection options with efficacy data
+- Clear pre-surgical optimization checklist (BMI, HbA1C, etc.)
+- Updated antibiotic prophylaxis guidelines with risk stratification
+- Red flags requiring immediate orthopedic referral
 
-        - A stepwise treatment algorithm with specific criteria for progression
-        - Evidence-based comparison table of injection options with efficacy data
-        - Clear pre-surgical optimization checklist (BMI, HbA1C, etc.)
-        - Updated antibiotic prophylaxis guidelines with risk stratification
-        - Red flags requiring immediate orthopedic referral
-
-        Include practical considerations for implementing these guidelines in primary care, cost implications, and strategies for patient education about modern joint replacement approaches.
-    </div>
+Include practical considerations for implementing these guidelines in primary care, cost implications, and strategies for patient education about modern joint replacement approaches.</div>
 
     <ul>
         <li><a href="https://www.bing.com/chat" target="_blank">Microsoft Copilot</a></li>
@@ -204,6 +186,5 @@ Include practical considerations for implementing these guidelines in primary ca
             }, 2000);
         });
     </script>
-
 </body>
 </html>
