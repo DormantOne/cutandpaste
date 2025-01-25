@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Character by Character Input</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+        .input-container {
+            text-align: center;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        textarea {
+            font-size: 16px;
+            width: 400px;
+            height: 200px;
+            padding: 1rem;
+            margin: 1rem 0;
+            border: 2px solid #007bff;
+            border-radius: 4px;
+            outline: none;
+            resize: vertical;
+        }
+        .message {
+            color: #dc3545;
+            font-size: 14px;
+            height: 20px;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="input-container">
+        <h2>Type One Character at a Time</h2>
+        <textarea id="textArea" onpaste="handlePaste(event)" oninput="handleInput(event)"></textarea>
+        <div class="message" id="message"></div>
+    </div>
+
+    <script>
+        const textArea = document.getElementById('textArea');
+        const message = document.getElementById('message');
+        let lastValidValue = '';
+        let lastLength = 0;
+
+        function handlePaste(event) {
+            event.preventDefault();
+            showMessage("Pasting is not allowed");
+        }
+
+        function handleInput(event) {
+            if (event.inputType === "insertFromPaste") {
+                textArea.value = lastValidValue;
+                showMessage("Pasting is not allowed");
+            } else if (Math.abs(textArea.value.length - lastLength) > 1) {
+                textArea.value = lastValidValue;
+                showMessage("Please type one character at a time");
+            } else {
+                lastValidValue = textArea.value;
+                lastLength = textArea.value.length;
+                message.textContent = "";
+            }
+        }
+
+        function showMessage(text) {
+            message.textContent = text;
+            setTimeout(() => message.textContent = "", 2000);
+        }
+    </script>
+</body>
+</html>
