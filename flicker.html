@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scrolling Native Flickering Text</title>
+    <style>
+        body {
+            margin: 0;
+            background: #111;
+            color: white;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        .banner-container {
+            width: 100%;
+            height: 60px;
+            position: relative;
+            overflow: hidden;
+            background: black;
+            border-bottom: 2px solid #444;
+        }
+
+        .text-grid {
+            display: grid;
+            gap: 1px;
+            position: absolute;
+            grid-template-rows: repeat(5, 10px);
+            top: 50%;
+            left: 100%;
+            transform: translateY(-50%);
+            animation: scroll 10s linear infinite;
+        }
+
+        .box {
+            width: 10px;
+            height: 10px;
+        }
+
+        /* Letter Squares - High Intensity Flicker */
+        .box.on {
+            animation: flickerOn 1s infinite;
+        }
+
+        /* Non-Letter Squares - Low Intensity Flicker */
+        .box.off {
+            animation: flickerOff 1s infinite;
+        }
+
+        @keyframes flickerOn {
+            0% { background-color: white; }
+            50% { background-color: lightgray; }
+            100% { background-color: white; }
+        }
+
+        @keyframes flickerOff {
+            0% { background-color: black; }
+            50% { background-color: gray; }
+            100% { background-color: black; }
+        }
+
+        @keyframes scroll {
+            from {
+                left: 100%;
+            }
+            to {
+                left: -200%;
+            }
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .slider-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="range"] {
+            width: 200px;
+        }
+
+        input[type="text"] {
+            padding: 5px;
+            font-size: 1rem;
+            width: 400px;
+            border: 1px solid #666;
+            background-color: #222;
+            color: white;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="banner-container">
+        <div class="text-grid"></div>
+    </div>
+    <div class="controls">
+        <input id="text-input" type="text" placeholder="Type your message here..." value="HUMANS ONLY QUESTION">
+        <div class="slider-group">
+            <label for="flicker-speed">Flicker Speed Base (ms):</label>
+            <input id="flicker-speed" type="range" min="50" max="1000" value="500">
+            <span id="flicker-speed-value">500</span>
+        </div>
+        <div class="slider-group">
+            <label for="contrast">Contrast Intensity (0-1):</label>
+            <input id="contrast" type="range" min="0" max="1" step="0.1" value="0.5">
+            <span id="contrast-value">0.5</span>
+        </div>
+        <div class="slider-group">
+            <label for="scroll-speed">Scroll Speed (s):</label>
+            <input id="scroll-speed" type="range" min="5" max="20" value="10">
+            <span id="scroll-speed-value">10</span>
+        </div>
+    </div>
+
+    <script>
+        const textInput = document.getElementById('text-input');
+        const textGrid = document.querySelector('.text-grid');
+        const flickerSpeedSlider = document.getElementById('flicker-speed');
+        const contrastSlider = document.getElementById('contrast');
+        const scrollSpeedSlider = document.getElementById('scroll-speed');
+        const flickerSpeedValue = document.getElementById('flicker-speed-value');
+        const contrastValue = document.getElementById('contrast-value');
+        const scrollSpeedValue = document.getElementById('scroll-speed-value');
+
+        // Full alphabet for text rendering
+        const alphabet = {
+            "A": ["  ###  ", " #   # ", " ##### ", " #   # ", " #   # "],
+            "B": [" ####  ", " #   # ", " ####  ", " #   # ", " ####  "],
+            "C": ["  #### ", " #     ", " #     ", " #     ", "  #### "],
+            "D": [" ####  ", " #   # ", " #   # ", " #   # ", " ####  "],
+            "E": [" ##### ", " #     ", " ##### ", " #     ", " ##### "],
+            "F": [" ##### ", " #     ", " ##### ", " #     ", " #     "],
+            "G": ["  #### ", " #     ", " #  ## ", " #   # ", "  #### "],
+            "H": [" #   # ", " #   # ", " ##### ", " #   # ", " #   # "],
+            "I": [" ##### ", "   #   ", "   #   ", "   #   ", " ##### "],
+            "J": [" ##### ", "   #   ", "   #   ", " # #   ", " ###   "],
+            "K": [" #   # ", " #  #  ", " ###   ", " #  #  ", " #   # "],
+            "L": [" #     ", " #     ", " #     ", " #     ", " ##### "],
+            "M": [" #   # ", " ## ## ", " # # # ", " #   # ", " #   # "],
+            "N": [" #   # ", " ##  # ", " # # # ", " #  ## ", " #   # "],
+            "O": ["  ###  ", " #   # ", " #   # ", " #   # ", "  ###  "],
+            "P": [" ####  ", " #   # ", " ####  ", " #     ", " #     "],
+            "Q": ["  ###  ", " #   # ", " #  ## ", " #   # ", "  #### "],
+            "R": [" ####  ", " #   # ", " ####  ", " #  #  ", " #   # "],
+            "S": ["  #### ", " #     ", "  ###  ", "     # ", " ####  "],
+            "T": [" ##### ", "   #   ", "   #   ", "   #   ", "   #   "],
+            "U": [" #   # ", " #   # ", " #   # ", " #   # ", "  ###  "],
+            "V": [" #   # ", " #   # ", "  # #  ", "  # #  ", "   #   "],
+            "W": [" #   # ", " #   # ", " # # # ", " ## ## ", " #   # "],
+            "X": [" #   # ", "  # #  ", "   #   ", "  # #  ", " #   # "],
+            "Y": [" #   # ", "  # #  ", "   #   ", "   #   ", "   #   "],
+            "Z": [" ##### ", "    #  ", "   #   ", "  #    ", " ##### "],
+            " ": ["       ", "       ", "       ", "       ", "       "]
+        };
+
+        // Convert text to a grid pattern
+        function textToPattern(text) {
+            const rows = Array(5).fill('');
+            text.toUpperCase().split('').forEach(char => {
+                const pattern = alphabet[char] || ["       ", "       ", "       ", "       ", "       "];
+                pattern.forEach((line, i) => {
+                    rows[i] += line + ' ';
+                });
+            });
+            return rows;
+        }
+
+        // Update the text grid with dynamic flickering
+        function updateTextGrid() {
+            const inputText = textInput.value || " ";
+            const textPattern = textToPattern(inputText);
+
+            textGrid.innerHTML = '';
+            textGrid.style.gridTemplateColumns = `repeat(${textPattern[0].length}, 10px)`;
+
+            textPattern.forEach(row => {
+                for (const char of row) {
+                    const box = document.createElement('div');
+                    box.classList.add('box', char === '#' ? 'on' : 'off');
+                    box.style.animationDuration = `${parseInt(flickerSpeedSlider.value) + Math.random() * 500}ms`;
+                    box.style.opacity = char === '#' ? contrastSlider.value : 1 - contrastSlider.value;
+                    textGrid.appendChild(box);
+                }
+            });
+
+            textGrid.style.animationDuration = `${scrollSpeedSlider.value}s`;
+        }
+
+        // Event listeners
+        textInput.addEventListener('input', updateTextGrid);
+        flickerSpeedSlider.addEventListener('input', () => {
+            flickerSpeedValue.textContent = flickerSpeedSlider.value;
+            updateTextGrid();
+        });
+        contrastSlider.addEventListener('input', () => {
+            contrastValue.textContent = contrastSlider.value;
+            updateTextGrid();
+        });
+        scrollSpeedSlider.addEventListener('input', () => {
+            scrollSpeedValue.textContent = scrollSpeedSlider.value;
+            updateTextGrid();
+        });
+
+        // Initialize
+        updateTextGrid();
+    </script>
+</body>
+</html>
