@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ACHD Comprehensive Analysis Prompt</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 15px;
+    }
+    p {
+      margin-bottom: 10px;
+    }
+    #copyButton, #clearCacheButton {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    #copyButton {
+      background-color: #4CAF50;
+      color: white;
+    }
+    #copyButton:hover {
+      background-color: #45a049;
+    }
+    #clearCacheButton {
+      background-color: #f44336;
+      color: white;
+      margin-top: 20px;
+    }
+    #clearCacheButton:hover {
+      background-color: #d32f2f;
+    }
+    #promptText {
+      font-size: 14px;
+      margin-top: 15px;
+      padding: 10px;
+      background-color: #eef;
+      border: 1px solid #ccd;
+      border-radius: 5px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>ACHD Comprehensive Analysis Prompt</h1>
+  <p>Copy and share this prompt:</p>
+  
+  <button id="copyButton" aria-label="Copy Prompt">Copy Prompt</button>
+  
+  <div id="promptText">
+I'm looking to understand adult congenital heart disease (ACHD) in depth. Please provide a comprehensive analysis including:
+
+Natural history and progression of key lesions, specifically:
+- Tetralogy of Fallot
+- Transposition of great arteries
+- Single ventricle/Fontan physiology
+- Coarctation
+- Septal defects (ASD/VSD)
+- Bicuspid aortic valve
+
+For each lesion, please detail:
+- Original anatomic defect
+- Typical surgical repairs and their timing
+- Long-term complications of both unrepaired and repaired states
+- Key imaging findings on echo, cardiac MRI, and CT
+- Specific monitoring requirements
+- Warning signs/red flags for decompensation
+
+Special considerations:
+- Exercise/sports participation guidelines
+- Pregnancy risk stratification and management
+- Mental health impacts
+- Transition of care from pediatric to adult providers
+- Life expectancy and quality of life data
+- Occupational considerations
+
+Modern management updates:
+- Recent changes in surgical approaches
+- Emerging catheter-based interventions
+- Current research directions
+- Controversial areas in management
+
+Please include relevant guideline recommendations where available and note areas where evidence is limited. Also highlight key differences in management between pediatric and adult populations.
+  </div>
+  
+  <button id="clearCacheButton">Clear Cache</button>
+  
+  <script>
+    const promptText = document.getElementById('promptText').innerText;
+    
+    function copyText(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('copyButton');
+        btn.innerText = "Copied!";
+        setTimeout(() => btn.innerText = "Copy Prompt", 2000);
+      });
+    }
+    
+    document.getElementById('copyButton').addEventListener('click', () => {
+      copyText(promptText);
+    });
+    
+    document.getElementById('clearCacheButton').addEventListener('click', () => {
+      localStorage.clear();
+      const btn = document.getElementById('clearCacheButton');
+      btn.innerText = "Cache Cleared!";
+      setTimeout(() => btn.innerText = "Clear Cache", 2000);
+    });
+  </script>
+</body>
+</html>
