@@ -1,65 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ACHD Comprehensive Analysis Prompt</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background-color: #f9f9f9;
-      color: #333;
-    }
-    h1 {
-      font-size: 24px;
-      margin-bottom: 15px;
-    }
-    p {
-      margin-bottom: 10px;
-    }
-    #copyButton, #clearCacheButton {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    #copyButton {
-      background-color: #4CAF50;
-      color: white;
-    }
-    #copyButton:hover {
-      background-color: #45a049;
-    }
-    #clearCacheButton {
-      background-color: #f44336;
-      color: white;
-      margin-top: 20px;
-    }
-    #clearCacheButton:hover {
-      background-color: #d32f2f;
-    }
-    #promptText {
-      font-size: 14px;
-      margin-top: 15px;
-      padding: 10px;
-      background-color: #eef;
-      border: 1px solid #ccd;
-      border-radius: 5px;
-      white-space: pre-wrap;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Congenital Heart Disease Query</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: left;
+            padding: 20px;
+            font-size: 16px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        p {
+            margin-bottom: 10px;
+        }
+        #copyButton {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        #copyButton:hover {
+            background-color: #45a049;
+        }
+        #copyButton.copied {
+            background-color: #388E3C;
+        }
+        #promptText {
+            font-size: 12px;
+            color: #555;
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #eef;
+            border: 1px solid #ccd;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        ul li {
+            margin-bottom: 8px;
+        }
+        ul li a {
+            color: #1a0dab;
+            text-decoration: none;
+        }
+        ul li a:hover {
+            text-decoration: underline;
+        }
+        #clearCacheButton {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+        #clearCacheButton:hover {
+            background-color: #d32f2f;
+        }
+    </style>
 </head>
 <body>
-  <h1>ACHD Comprehensive Analysis Prompt</h1>
-  <p>Copy and share this prompt:</p>
-  
-  <button id="copyButton" aria-label="Copy Prompt">Copy Prompt</button>
-  
-  <div id="promptText">
-I'm looking to understand adult congenital heart disease (ACHD) in depth. Please provide a comprehensive analysis including:
+    <h1>Congenital Heart Disease Query</h1>
+    <p>Copy and paste this prompt into any of the AI chatbots below:</p>
 
+    <button id="copyButton" aria-label="Copy Congenital Heart Disease Prompt to Clipboard">Copy Congenital Heart Disease Prompt to Clipboard</button>
+
+    <div id="promptText">
 Natural history and progression of key lesions, specifically:
 - Tetralogy of Fallot
 - Transposition of great arteries
@@ -83,39 +107,99 @@ Special considerations:
 - Transition of care from pediatric to adult providers
 - Life expectancy and quality of life data
 - Occupational considerations
+    </div>
 
-Modern management updates:
-- Recent changes in surgical approaches
-- Emerging catheter-based interventions
-- Current research directions
-- Controversial areas in management
+    <ul>
+        <li><a href="https://www.bing.com/chat" target="_blank">Microsoft Copilot</a></li>
+        <li><a href="https://chat.openai.com/" target="_blank">ChatGPT by OpenAI</a></li>
+        <li><a href="https://claude.ai/" target="_blank">Claude by Anthropic</a></li>
+        <li><a href="https://gemini.google.com/" target="_blank">Gemini</a></li>
+        <li><a href="https://www.perplexity.ai/" target="_blank">Perplexity AI</a></li>
+        <li><a href="https://www.openevidence.com/" target="_blank">Open Evidence</a></li>
+        <li><a href="https://chat.deepseek.com/" target="_blank">DeepSeek</a></li>
+    </ul>
 
-Please include relevant guideline recommendations where available and note areas where evidence is limited. Also highlight key differences in management between pediatric and adult populations.
-  </div>
-  
-  <button id="clearCacheButton">Clear Cache</button>
-  
-  <script>
-    const promptText = document.getElementById('promptText').innerText;
-    
-    function copyText(text) {
-      navigator.clipboard.writeText(text).then(() => {
-        const btn = document.getElementById('copyButton');
-        btn.innerText = "Copied!";
-        setTimeout(() => btn.innerText = "Copy Prompt", 2000);
-      });
-    }
-    
-    document.getElementById('copyButton').addEventListener('click', () => {
-      copyText(promptText);
-    });
-    
-    document.getElementById('clearCacheButton').addEventListener('click', () => {
-      localStorage.clear();
-      const btn = document.getElementById('clearCacheButton');
-      btn.innerText = "Cache Cleared!";
-      setTimeout(() => btn.innerText = "Clear Cache", 2000);
-    });
-  </script>
+    <button id="clearCacheButton">Clear Cache / Memory</button>
+
+    <script>
+        const blockOfText = `Natural history and progression of key lesions, specifically:
+- Tetralogy of Fallot
+- Transposition of great arteries
+- Single ventricle/Fontan physiology
+- Coarctation
+- Septal defects (ASD/VSD)
+- Bicuspid aortic valve
+
+For each lesion, please detail:
+- Original anatomic defect
+- Typical surgical repairs and their timing
+- Long-term complications of both unrepaired and repaired states
+- Key imaging findings on echo, cardiac MRI, and CT
+- Specific monitoring requirements
+- Warning signs/red flags for decompensation
+
+Special considerations:
+- Exercise/sports participation guidelines
+- Pregnancy risk stratification and management
+- Mental health impacts
+- Transition of care from pediatric to adult providers
+- Life expectancy and quality of life data
+- Occupational considerations`;
+
+        function copyToClipboard(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                return navigator.clipboard.writeText(text);
+            } else {
+                return new Promise((resolve, reject) => {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = text;
+                    textArea.style.position = "fixed";
+                    textArea.style.top = "0";
+                    textArea.style.left = "0";
+                    textArea.style.width = "2em";
+                    textArea.style.height = "2em";
+                    textArea.style.padding = "0";
+                    textArea.style.border = "none";
+                    textArea.style.outline = "none";
+                    textArea.style.boxShadow = "none";
+                    textArea.style.background = "transparent";
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        resolve();
+                    } catch (err) {
+                        document.body.removeChild(textArea);
+                        reject(err);
+                    }
+                });
+            }
+        }
+
+        document.getElementById('copyButton').addEventListener('click', () => {
+            copyToClipboard(blockOfText).then(() => {
+                const copyBtn = document.getElementById('copyButton');
+                copyBtn.innerText = "Copied!";
+                copyBtn.classList.add('copied');
+                setTimeout(() => {
+                    copyBtn.innerText = "Copy Congenital Heart Disease Prompt to Clipboard";
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+            });
+        });
+
+        document.getElementById('clearCacheButton').addEventListener('click', () => {
+            localStorage.clear();
+            const clearBtn = document.getElementById('clearCacheButton');
+            clearBtn.innerText = "Cleared!";
+            clearBtn.disabled = true;
+            setTimeout(() => {
+                clearBtn.innerText = "Clear Cache / Memory";
+                clearBtn.disabled = false;
+            }, 2000);
+        });
+    </script>
 </body>
 </html>
