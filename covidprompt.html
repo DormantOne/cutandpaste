@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Long COVID Research Prompts</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: left;
+            padding: 20px;
+            font-size: 16px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        h2 {
+            font-size: 20px;
+            margin-top: 30px;
+            margin-bottom: 10px;
+        }
+        p {
+            margin-bottom: 10px;
+        }
+        .copyButton {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            margin-bottom: 15px;
+        }
+        .copyButton:hover {
+            background-color: #45a049;
+        }
+        .copyButton.copied {
+            background-color: #388E3C;
+        }
+        .promptContainer {
+            margin-top: 15px;
+            margin-bottom: 30px;
+        }
+        .promptText {
+            font-size: 12px;
+            color: #555;
+            padding: 10px;
+            background-color: #eef;
+            border: 1px solid #ccd;
+            border-radius: 5px 5px 0 0;
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+            max-height: 25px;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        .promptText.expanded {
+            max-height: 1000px;
+        }
+        .expandPrompt {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 5px;
+            cursor: pointer;
+            background-color: #e8e8ee;
+            border-radius: 0 0 5px 5px;
+            border-top: 1px dashed #ccd;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        ul li {
+            margin-bottom: 8px;
+        }
+        ul li a {
+            color: #1a0dab;
+            text-decoration: none;
+        }
+        ul li a:hover {
+            text-decoration: underline;
+        }
+        #clearCacheButton {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+        #clearCacheButton:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <h1>Long COVID Research Prompts</h1>
+    <p>Copy and paste these prompts into any AI chatbot for in-depth analysis:</p>
+
+    <h2>POTS in Long COVID Deep Dive</h2>
+    <button id="copyButton1" class="copyButton" aria-label="Copy POTS Prompt to Clipboard">Copy POTS Prompt to Clipboard</button>
+
+    <div class="promptContainer">
+        <div id="promptText1" class="promptText">
+Provide a comprehensive analysis of POTS (Postural Orthostatic Tachycardia Syndrome) in post-COVID patients, including:
+
+1. Detailed pathophysiology mechanisms and how they may differ from other causes of POTS
+2. A practical step-by-step diagnostic algorithm for primary care providers, including specific testing parameters and when specialty referral is indicated
+3. Evidence-based treatment protocol with specific medication dosing recommendations, titration schedules, and monitoring parameters for each medication class (beta blockers, midodrine, fludrocortisone, ivabradine, pyridostigmine)
+4. Patient education resources and self-management strategies including the Levine Protocol
+5. Potential long-term outcomes and prognosis based on current research
+
+Please include both pharmacological and non-pharmacological approaches, and address how to manage patients who don't respond to first-line therapies. Cite relevant research where available.
+        </div>
+        <div class="expandPrompt" id="expand1">Click to expand/collapse...</div>
+    </div>
+
+    <h2>Long COVID Comprehensive Review</h2>
+    <button id="copyButton2" class="copyButton" aria-label="Copy Long COVID Prompt to Clipboard">Copy Long COVID Prompt to Clipboard</button>
+
+    <div class="promptContainer">
+        <div id="promptText2" class="promptText">
+Provide a state-of-the-art review of Long COVID, covering:
+
+1. Evolving diagnostic criteria and case definitions, including how they've changed since 2020
+2. Current understanding of pathophysiological mechanisms, particularly focusing on:
+   - Viral persistence versus viral clearance theories
+   - Immune dysregulation and autoimmunity
+   - Microbiome disruption
+   - Endothelial dysfunction
+   - Autonomic nervous system involvement
+
+3. Cutting-edge research findings from major studies (RECOVER, etc.) and what they reveal about disease mechanisms
+
+4. Diagnostic approach for primary care providers, including:
+   - Minimum recommended workup
+   - Differential diagnosis considerations
+   - When to refer to specialty clinics
+
+5. Evidence on viral persistence versus clearance - review recent studies on viral reservoir detection, ongoing viral replication, and implications for treatments like Paxlovid for long COVID
+
+6. Management strategies that have shown promise in clinical studies, particularly examining antiviral approaches if viral persistence is suspected
+
+Include current research controversies and unanswered questions that may transform our understanding in the coming years.
+        </div>
+        <div class="expandPrompt" id="expand2">Click to expand/collapse...</div>
+    </div>
+
+    <h2>Use with your favorite AI chatbot:</h2>
+    <ul>
+        <li><a href="https://www.bing.com/chat" target="_blank">Microsoft Copilot</a></li>
+        <li><a href="https://chat.openai.com/" target="_blank">ChatGPT by OpenAI</a></li>
+        <li><a href="https://claude.ai/" target="_blank">Claude by Anthropic</a></li>
+        <li><a href="https://gemini.google.com/" target="_blank">Gemini</a></li>
+        <li><a href="https://www.perplexity.ai/" target="_blank">Perplexity AI</a></li>
+        <li><a href="https://www.openevidence.com/" target="_blank">Open Evidence</a></li>
+        <li><a href="https://chat.deepseek.com/" target="_blank">DeepSeek</a></li>
+    </ul>
+
+    <button id="clearCacheButton">Clear Cache / Memory</button>
+
+    <script>
+        const potsPrompt = document.getElementById('promptText1').textContent.trim();
+        const covidPrompt = document.getElementById('promptText2').textContent.trim();
+
+        function copyToClipboard(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                return navigator.clipboard.writeText(text);
+            } else {
+                return new Promise((resolve, reject) => {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = text;
+                    textArea.style.position = "fixed";
+                    textArea.style.top = "0";
+                    textArea.style.left = "0";
+                    textArea.style.width = "2em";
+                    textArea.style.height = "2em";
+                    textArea.style.padding = "0";
+                    textArea.style.border = "none";
+                    textArea.style.outline = "none";
+                    textArea.style.boxShadow = "none";
+                    textArea.style.background = "transparent";
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        resolve();
+                    } catch (err) {
+                        document.body.removeChild(textArea);
+                        reject(err);
+                    }
+                });
+            }
+        }
+
+        document.getElementById('copyButton1').addEventListener('click', () => {
+            copyToClipboard(potsPrompt).then(() => {
+                const copyBtn = document.getElementById('copyButton1');
+                copyBtn.innerText = "Copied!";
+                copyBtn.classList.add('copied');
+                setTimeout(() => {
+                    copyBtn.innerText = "Copy POTS Prompt to Clipboard";
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+            });
+        });
+
+        document.getElementById('copyButton2').addEventListener('click', () => {
+            copyToClipboard(covidPrompt).then(() => {
+                const copyBtn = document.getElementById('copyButton2');
+                copyBtn.innerText = "Copied!";
+                copyBtn.classList.add('copied');
+                setTimeout(() => {
+                    copyBtn.innerText = "Copy Long COVID Prompt to Clipboard";
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+            });
+        });
+
+        // Toggle expand/collapse for prompt texts
+        document.getElementById('promptText1').addEventListener('click', () => {
+            document.getElementById('promptText1').classList.toggle('expanded');
+        });
+        
+        document.getElementById('expand1').addEventListener('click', () => {
+            document.getElementById('promptText1').classList.toggle('expanded');
+        });
+
+        document.getElementById('promptText2').addEventListener('click', () => {
+            document.getElementById('promptText2').classList.toggle('expanded');
+        });
+        
+        document.getElementById('expand2').addEventListener('click', () => {
+            document.getElementById('promptText2').classList.toggle('expanded');
+        });
+
+        document.getElementById('clearCacheButton').addEventListener('click', () => {
+            localStorage.clear();
+            const clearBtn = document.getElementById('clearCacheButton');
+            clearBtn.innerText = "Cleared!";
+            clearBtn.disabled = true;
+            setTimeout(() => {
+                clearBtn.innerText = "Clear Cache / Memory";
+                clearBtn.disabled = false;
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
