@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organic Chemistry Molecule Builder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .atoms, .bonds {
+            display: flex;
+            gap: 10px;
+        }
+        .atom-btn, .bond-btn, .action-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .atom-btn {
+            background-color: #e3f2fd;
+        }
+        .bond-btn {
+            background-color: #e8f5e9;
+        }
+        .action-btn {
+            background-color: #ede7f6;
+            margin-left: auto;
+        }
+        .atom-btn:hover, .bond-btn:hover, .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .atom-btn.active, .bond-btn.active {
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+        }
+        #canvas-container {
+            position: relative;
+            border: 1px solid #ccc;
+            background-color: white;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            touch-action: none;
+        }
+        canvas {
+            display: block;
+            background: white;
+        }
+        .message {
+            text-align: center;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        #status {
+            font-style: italic;
+            color: #555;
+            margin-top: 10px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 0.9em;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+        .action-button {
+            padding: 10px 20px;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        #optimize-btn {
+            background-color: #2196F3;
+        }
+        #center-btn {
+            background-color: #9C27B0;
+        }
+        #save-btn {
+            background-color: #4CAF50;
+        }
+        #clear-btn {
+            background-color: #f44336;
+        }
+        .action-button:hover {
+            opacity: 0.9;
+        }
+        #C { background-color: #909090; color: white; }
+        #N { background-color: #3050F8; color: white; }
+        #O { background-color: #FF0D0D; color: white; }
+        #H { background-color: #FFFFFF; color: black; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Organic Chemistry Molecule Builder</h1>
+            <p>Create molecular structures by placing atoms and bonds. Save the result as an image for training diffusion models.</p>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <h3>Atoms</h3>
+                <div class="atoms">
+                    <button id="C" class="atom-btn active" data-atom="C">C</button>
+                    <button id="N" class="atom-btn" data-atom="N">N</button>
+                    <button id="O" class="atom-btn" data-atom="O">O</button>
+                    <button id="H" class="atom-btn" data-atom="H">H</button>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h3>Bonds</h3>
+                <div class="bonds">
+                    <button id="single" class="bond-btn active" data-bond="single">Single</button>
+                    <button id="double" class="bond-btn" data-bond="double">Double</button>
+                    <button id="triple" class="bond-btn" data-bond="triple">Triple</button>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <h3>Actions</h3>
+                <div class="bonds">
+                    <button id="erase" class="action-btn">Erase</button>
+                    <button id="move" class="action-btn">Move</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="canvas-container">
+            <canvas id="molecule-canvas" width="800" height="600"></canvas>
+        </div>
+        
+        <div class="message">
+            <p>Click to place atoms. Drag from one atom to another to create bonds.</p>
+            <p id="status">Ready to build</p>
+        </div>
+        
+        <div class="btn-group">
+            <button id="optimize-btn" class="action-button">Optimize Structure</button>
+            <button id="center-btn" class="action-button">Center Molecule</button>
+            <button id="save-btn" class="action-button">Save as Image</button>
+            <button id="clear-btn" class="action-button">Clear Canvas</button>
+        </div>
+        
+        <div class="footer">
+            <p>Note: This tool creates standard organic chemistry visualizations without atom labels for use in training diffusion models.</p>
+        </div>
+    </div>
+
+    <script>
+        // Initialize the molecule builder when the page is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            var MoleculeBuilder = (function() {
+                // Private variables
+                var atoms = [];
+                var bonds = [];
+                var selectedAtom = 'C';
+                var selectedBond = 'single';
+                var mode = 'atom'; // 'atom', 'bond', 'erase', 'move'
+                var dragStart = null;
+                var moveAtom = null;
+                var isOptimizing = false;
+                var optimizationAnimationId = null;
+                var canvas, ctx, statusEl;
+                
+                // Force-directed layout configuration
+                var forceConfig = {
+                    idealBondLength: 60,
+                    bondStrength: 0.1,
+                    repulsionStrength: 6000,
+                    damping: 0.85,
+                    iterations: 100,
+                    animationSpeed: 15 // ms between frames
+                };
+                
+                // Atom properties
+                var atomColors = {
+                    'C': '#333333',
+                    'N': '#3050F8',
+                    'O': '#FF0D0D',
+                    'H': '#FFFFFF'
+                };
+                
+                var atomSizes = {
+                    'C': 12,
+                    'N': 12,
+                    'O': 12,
+                    'H': 8
+                };
+                
+                var atomOutlines = {
+                    'C': '#000000',
+                    'N': '#0030C8',
+                    'O': '#D00000',
+                    'H': '#909090'
+                };
+                
+                // Function to redraw the canvas
+                function redraw() {
+                    // Clear canvas
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Draw bonds first
+                    bonds.forEach(function(bond) {
+                        var atom1 = atoms.find(function(a) { return a.id === bond.atom1; });
+                        var atom2 = atoms.find(function(a) { return a.id === bond.atom2; });
+                        
+                        if (atom1 && atom2) {
+                            drawBond(ctx, atom1, atom2, bond.type, true);
+                        }
+                    });
+                    
+                    // Draw atoms on top
+                    atoms.forEach(function(atom) {
+                        drawAtom(ctx, atom, true);
+                    });
+                }
+                
+                // Function to draw an atom
+                function drawAtom(context, atom, showLabel) {
+                    var x = atom.x;
+                    var y = atom.y;
+                    var type = atom.type;
+                    var size = atomSizes[type];
+                    
+                    // Draw atom circle
+                    context.beginPath();
+                    context.arc(x, y, size, 0, Math.PI * 2);
+                    context.fillStyle = atomColors[type];
+                    context.fill();
+                    context.strokeStyle = atomOutlines[type];
+                    context.lineWidth = 1;
+                    context.stroke();
+                    
+                    // Draw label if needed
+                    if (showLabel && type !== 'C') {  // Carbon atoms typically unlabeled
+                        context.fillStyle = type === 'H' ? '#000' : '#fff';
+                        context.font = 'bold 12px Arial';
+                        context.textAlign = 'center';
+                        context.textBaseline = 'middle';
+                        context.fillText(type, x, y);
+                    }
+                }
+                
+                // Function to draw a bond
+                function drawBond(context, atom1, atom2, bondType, showShadow) {
+                    var x1 = atom1.x;
+                    var y1 = atom1.y;
+                    var x2 = atom2.x;
+                    var y2 = atom2.y;
+                    
+                    // Calculate distance and normalized direction vector
+                    var dx = x2 - x1;
+                    var dy = y2 - y1;
+                    var length = Math.sqrt(dx * dx + dy * dy);
+                    var nx = dx / length;
+                    var ny = dy / length;
+                    
+                    // Calculate perpendicular vector for multiple bonds
+                    var px = -ny;
+                    var py = nx;
+                    
+                    // Adjust bond start/end points to not overlap atoms
+                    var size1 = atomSizes[atom1.type];
+                    var size2 = atomSizes[atom2.type];
+                    
+                    var startX = x1 + nx * size1;
+                    var startY = y1 + ny * size1;
+                    var endX = x2 - nx * size2;
+                    var endY = y2 - ny * size2;
+                    
+                    // Bond color (black for standard representation)
+                    context.strokeStyle = '#000';
+                    context.lineWidth = 2;
+                    
+                    // Draw shadow if enabled
+                    if (showShadow) {
+                        context.shadowColor = 'rgba(0, 0, 0, 0.3)';
+                        context.shadowBlur = 4;
+                        context.shadowOffsetX = 1;
+                        context.shadowOffsetY = 1;
+                    }
+                    
+                    // Draw different bond types
+                    if (bondType === 'single') {
+                        // Single bond
+                        context.beginPath();
+                        context.moveTo(startX, startY);
+                        context.lineTo(endX, endY);
+                        context.stroke();
+                    } else if (bondType === 'double') {
+                        // Double bond - two parallel lines
+                        var offset = 3;
+                        
+                        // First line
+                        context.beginPath();
+                        context.moveTo(startX + px * offset, startY + py * offset);
+                        context.lineTo(endX + px * offset, endY + py * offset);
+                        context.stroke();
+                        
+                        // Second line
+                        context.beginPath();
+                        context.moveTo(startX - px * offset, startY - py * offset);
+                        context.lineTo(endX - px * offset, endY - py * offset);
+                        context.stroke();
+                    } else if (bondType === 'triple') {
+                        // Triple bond - three parallel lines
+                        var offset = 4;
+                        
+                        // First line (center)
+                        context.beginPath();
+                        context.moveTo(startX, startY);
+                        context.lineTo(endX, endY);
+                        context.stroke();
+                        
+                        // Second line
+                        context.beginPath();
+                        context.moveTo(startX + px * offset, startY + py * offset);
+                        context.lineTo(endX + px * offset, endY + py * offset);
+                        context.stroke();
+                        
+                        // Third line
+                        context.beginPath();
+                        context.moveTo(startX - px * offset, startY - py * offset);
+                        context.lineTo(endX - px * offset, endY - py * offset);
+                        context.stroke();
+                    }
+                    
+                    // Reset shadow
+                    context.shadowColor = 'transparent';
+                    context.shadowBlur = 0;
+                    context.shadowOffsetX = 0;
+                    context.shadowOffsetY = 0;
+                }
+                
+                // Find atom near a point
+                function findAtomNear(x, y, tolerance) {
+                    tolerance = tolerance || 15;
+                    return atoms.find(function(atom) {
+                        var dx = atom.x - x;
+                        var dy = atom.y - y;
+                        return Math.sqrt(dx * dx + dy * dy) <= tolerance;
+                    });
+                }
+                
+                // Find bond near a point
+                function findBondNear(x, y, tolerance) {
+                    tolerance = tolerance || 5;
+                    return bonds.find(function(bond) {
+                        var atom1 = atoms.find(function(a) { return a.id === bond.atom1; });
+                        var atom2 = atoms.find(function(a) { return a.id === bond.atom2; });
+                        
+                        if (!atom1 || !atom2) return false;
+                        
+                        // Distance from point to line segment
+                        var A = x - atom1.x;
+                        var B = y - atom1.y;
+                        var C = atom2.x - atom1.x;
+                        var D = atom2.y - atom1.y;
+                        
+                        var dot = A * C + B * D;
+                        var len_sq = C * C + D * D;
+                        var param = -1;
+                        
+                        if (len_sq !== 0) param = dot / len_sq;
+                        
+                        var xx, yy;
+                        
+                        if (param < 0) {
+                            xx = atom1.x;
+                            yy = atom1.y;
+                        } else if (param > 1) {
+                            xx = atom2.x;
+                            yy = atom2.y;
+                        } else {
+                            xx = atom1.x + param * C;
+                            yy = atom1.y + param * D;
+                        }
+                        
+                        var dx = x - xx;
+                        var dy = y - yy;
+                        var distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        return distance <= tolerance;
+                    });
+                }
+                
+                // Mouse event handlers
+                function handleMouseDown(e) {
+                    var rect = canvas.getBoundingClientRect();
+                    var x = e.clientX - rect.left;
+                    var y = e.clientY - rect.top;
+                    
+                    if (mode === 'atom') {
+                        // Create a new atom
+                        var newAtom = {
+                            id: Date.now(),
+                            x: x,
+                            y: y,
+                            type: selectedAtom
+                        };
+                        
+                        // Check if clicking too close to existing atom
+                        var existingAtom = findAtomNear(x, y);
+                        if (existingAtom) {
+                            statusEl.textContent = 'Too close to existing atom';
+                            return;
+                        }
+                        
+                        atoms.push(newAtom);
+                        redraw();
+                        statusEl.textContent = 'Placed ' + selectedAtom + ' atom';
+                    } else if (mode === 'bond') {
+                        // Start a bond
+                        var startAtom = findAtomNear(x, y);
+                        if (startAtom) {
+                            dragStart = startAtom;
+                            statusEl.textContent = 'Drag to another atom to create bond';
+                        }
+                    } else if (mode === 'erase') {
+                        // Erase atom or bond
+                        var atom = findAtomNear(x, y);
+                        if (atom) {
+                            // Erase atom and connected bonds
+                            atoms = atoms.filter(function(a) { return a.id !== atom.id; });
+                            bonds = bonds.filter(function(b) { 
+                                return b.atom1 !== atom.id && b.atom2 !== atom.id; 
+                            });
+                            redraw();
+                            statusEl.textContent = 'Atom erased';
+                        } else {
+                            // Check if clicked on a bond
+                            var bond = findBondNear(x, y);
+                            if (bond) {
+                                bonds = bonds.filter(function(b) { return b !== bond; });
+                                redraw();
+                                statusEl.textContent = 'Bond erased';
+                            }
+                        }
+                    } else if (mode === 'move') {
+                        // Start moving an atom
+                        moveAtom = findAtomNear(x, y);
+                        if (moveAtom) {
+                            statusEl.textContent = 'Moving atom...';
+                        }
+                    }
+                }
+                
+                function handleMouseMove(e) {
+                    var rect = canvas.getBoundingClientRect();
+                    var x = e.clientX - rect.left;
+                    var y = e.clientY - rect.top;
+                    
+                    if (mode === 'bond' && dragStart) {
+                        // Preview the bond being created
+                        redraw();
+                        
+                        var endAtom = findAtomNear(x, y);
+                        if (endAtom && endAtom !== dragStart) {
+                            // Highlight the target atom
+                            ctx.beginPath();
+                            ctx.arc(endAtom.x, endAtom.y, atomSizes[endAtom.type] + 3, 0, Math.PI * 2);
+                            ctx.strokeStyle = '#4CAF50';
+                            ctx.lineWidth = 2;
+                            ctx.stroke();
+                            
+                            // Draw the preview bond
+                            ctx.beginPath();
+                            ctx.moveTo(dragStart.x, dragStart.y);
+                            ctx.lineTo(endAtom.x, endAtom.y);
+                            ctx.strokeStyle = '#4CAF50';
+                            ctx.lineWidth = 2;
+                            ctx.setLineDash([5, 3]);
+                            ctx.stroke();
+                            ctx.setLineDash([]);
+                        } else {
+                            // Just draw the line
+                            ctx.beginPath();
+                            ctx.moveTo(dragStart.x, dragStart.y);
+                            ctx.lineTo(x, y);
+                            ctx.strokeStyle = '#999';
+                            ctx.lineWidth = 1;
+                            ctx.setLineDash([5, 3]);
+                            ctx.stroke();
+                            ctx.setLineDash([]);
+                        }
+                    } else if (mode === 'move' && moveAtom) {
+                        // Update position of the atom being moved
+                        moveAtom.x = x;
+                        moveAtom.y = y;
+                        redraw();
+                    }
+                }
+                
+                function handleMouseUp(e) {
+                    var rect = canvas.getBoundingClientRect();
+                    var x = e.clientX - rect.left;
+                    var y = e.clientY - rect.top;
+                    
+                    if (mode === 'bond' && dragStart) {
+                        var endAtom = findAtomNear(x, y);
+                        
+                        if (endAtom && endAtom !== dragStart) {
+                            // Check if bond already exists
+                            var existingBond = bonds.find(function(b) {
+                                return (b.atom1 === dragStart.id && b.atom2 === endAtom.id) || 
+                                      (b.atom1 === endAtom.id && b.atom2 === dragStart.id);
+                            });
+                            
+                            if (existingBond) {
+                                // Update bond type
+                                existingBond.type = selectedBond;
+                                statusEl.textContent = 'Updated to ' + selectedBond + ' bond';
+                            } else {
+                                // Create new bond
+                                var newBond = {
+                                    atom1: dragStart.id,
+                                    atom2: endAtom.id,
+                                    type: selectedBond
+                                };
+                                bonds.push(newBond);
+                                statusEl.textContent = 'Created ' + selectedBond + ' bond';
+                            }
+                            
+                            redraw();
+                        }
+                    }
+                    
+                    // Reset drag state
+                    dragStart = null;
+                    moveAtom = null;
+                }
+                
+                // Force-directed layout
+                function applyForceDirectedLayout() {
+                    if (atoms.length <= 1) {
+                        statusEl.textContent = 'Need at least 2 atoms to optimize';
+                        return;
+                    }
+                    
+                    isOptimizing = true;
+                    statusEl.textContent = 'Optimizing structure...';
+                    
+                    // Create a physics simulation copy of our atoms
+                    var simulation = atoms.map(function(atom) {
+                        return {
+                            id: atom.id,
+                            x: atom.x,
+                            y: atom.y,
+                            type: atom.type,
+                            vx: 0,
+                            vy: 0,
+                            fx: 0,
+                            fy: 0
+                        };
+                    });
+                    
+                    var iteration = 0;
+                    
+                    function runOptimizationStep() {
+                        // Clear forces
+                        simulation.forEach(function(atom) {
+                            atom.fx = 0;
+                            atom.fy = 0;
+                        });
+                        
+                        // Apply repulsive forces between all atoms
+                        for (var i = 0; i < simulation.length; i++) {
+                            for (var j = i + 1; j < simulation.length; j++) {
+                                var atom1 = simulation[i];
+                                var atom2 = simulation[j];
+                                
+                                var dx = atom2.x - atom1.x;
+                                var dy = atom2.y - atom1.y;
+                                var distanceSquared = dx * dx + dy * dy;
+                                var distance = Math.sqrt(distanceSquared);
+                                
+                                if (distance > 0) {
+                                    // Repulsive force inversely proportional to distance squared
+                                    var repulsionForce = forceConfig.repulsionStrength / distanceSquared;
+                                    var forceX = (dx / distance) * repulsionForce;
+                                    var forceY = (dy / distance) * repulsionForce;
+                                    
+                                    atom1.fx -= forceX;
+                                    atom1.fy -= forceY;
+                                    atom2.fx += forceX;
+                                    atom2.fy += forceY;
+                                }
+                            }
+                        }
+                        
+                        // Apply attractive forces for bonds
+                        bonds.forEach(function(bond) {
+                            var atom1 = simulation.find(function(a) { return a.id === bond.atom1; });
+                            var atom2 = simulation.find(function(a) { return a.id === bond.atom2; });
+                            
+                            if (atom1 && atom2) {
+                                var dx = atom2.x - atom1.x;
+                                var dy = atom2.y - atom1.y;
+                                var distance = Math.sqrt(dx * dx + dy * dy);
+                                
+                                if (distance > 0) {
+                                    // Calculate the difference from ideal bond length
+                                    var displacement = distance - forceConfig.idealBondLength;
+                                    var force = displacement * forceConfig.bondStrength;
+                                    
+                                    // Apply forces proportional to distance difference
+                                    var forceX = (dx / distance) * force;
+                                    var forceY = (dy / distance) * force;
+                                    
+                                    atom1.fx += forceX;
+                                    atom1.fy += forceY;
+                                    atom2.fx -= forceX;
+                                    atom2.fy -= forceY;
+                                }
+                            }
+                        });
+                        
+                        // Update positions based on forces
+                        simulation.forEach(function(atom) {
+                            atom.vx = (atom.vx + atom.fx) * forceConfig.damping;
+                            atom.vy = (atom.vy + atom.fy) * forceConfig.damping;
+                            atom.x += atom.vx;
+                            atom.y += atom.vy;
+                        });
+                        
+                        // Update original atoms
+                        simulation.forEach(function(simAtom) {
+                            var atom = atoms.find(function(a) { return a.id === simAtom.id; });
+                            if (atom) {
+                                atom.x = simAtom.x;
+                                atom.y = simAtom.y;
+                            }
+                        });
+                        
+                        // Redraw
+                        redraw();
+                        
+                        iteration++;
+                        
+                        // Check if we should continue
+                        if (iteration < forceConfig.iterations) {
+                            optimizationAnimationId = setTimeout(runOptimizationStep, forceConfig.animationSpeed);
+                        } else {
+                            finishOptimization();
+                        }
+                    }
+                    
+                    function finishOptimization() {
+                        isOptimizing = false;
+                        optimizationAnimationId = null;
+                        statusEl.textContent = 'Structure optimized';
+                        
+                        // Center the molecule in the canvas
+                        centerMolecule();
+                    }
+                    
+                    // Start the optimization
+                    runOptimizationStep();
+                }
+                
+                // Utility functions
+                function centerMolecule() {
+                    if (atoms.length === 0) {
+                        statusEl.textContent = 'No atoms to center';
+                        return;
+                    }
+                    
+                    // Find bounds of the molecule
+                    var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                    
+                    atoms.forEach(function(atom) {
+                        minX = Math.min(minX, atom.x);
+                        minY = Math.min(minY, atom.y);
+                        maxX = Math.max(maxX, atom.x);
+                        maxY = Math.max(maxY, atom.y);
+                    });
+                    
+                    // Calculate molecule center
+                    var centerX = (minX + maxX) / 2;
+                    var centerY = (minY + maxY) / 2;
+                    
+                    // Calculate canvas center
+                    var canvasCenterX = canvas.width / 2;
+                    var canvasCenterY = canvas.height / 2;
+                    
+                    // Calculate translation
+                    var dx = canvasCenterX - centerX;
+                    var dy = canvasCenterY - centerY;
+                    
+                    // Move all atoms
+                    atoms.forEach(function(atom) {
+                        atom.x += dx;
+                        atom.y += dy;
+                    });
+                    
+                    redraw();
+                }
+                
+                function resizeCanvas() {
+                    var container = document.getElementById('canvas-container');
+                    canvas.width = container.clientWidth;
+                    canvas.height = Math.max(500, window.innerHeight * 0.6);
+                    redraw();
+                }
+                
+                // Save function
+                function saveImage() {
+                    if (atoms.length === 0) {
+                        statusEl.textContent = 'No atoms to save';
+                        return;
+                    }
+                    
+                    // Create a temporary canvas for the image
+                    var tempCanvas = document.createElement('canvas');
+                    var tempCtx = tempCanvas.getContext('2d');
+                    
+                    // Find bounds of the molecule
+                    var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                    
+                    atoms.forEach(function(atom) {
+                        var size = atomSizes[atom.type] + 10; // Add padding
+                        minX = Math.min(minX, atom.x - size);
+                        minY = Math.min(minY, atom.y - size);
+                        maxX = Math.max(maxX, atom.x + size);
+                        maxY = Math.max(maxY, atom.y + size);
+                    });
+                    
+                    // Add some padding
+                    var padding = 20;
+                    minX -= padding;
+                    minY -= padding;
+                    maxX += padding;
+                    maxY += padding;
+                    
+                    var width = maxX - minX;
+                    var height = maxY - minY;
+                    
+                    // Set temp canvas size
+                    tempCanvas.width = width;
+                    tempCanvas.height = height;
+                    
+                    // Fill with white background
+                    tempCtx.fillStyle = 'white';
+                    tempCtx.fillRect(0, 0, width, height);
+                    
+                    // Offset all coordinates
+                    tempCtx.translate(-minX, -minY);
+                    
+                    // Draw bonds first
+                    bonds.forEach(function(bond) {
+                        var atom1 = atoms.find(function(a) { return a.id === bond.atom1; });
+                        var atom2 = atoms.find(function(a) { return a.id === bond.atom2; });
+                        
+                        if (atom1 && atom2) {
+                            drawBond(tempCtx, atom1, atom2, bond.type, false);
+                        }
+                    });
+                    
+                    // Draw atoms without labels
+                    atoms.forEach(function(atom) {
+                        drawAtom(tempCtx, atom, false);
+                    });
+                    
+                    // Create download link
+                    var link = document.createElement('a');
+                    link.download = 'molecule-structure.png';
+                    link.href = tempCanvas.toDataURL('image/png');
+                    link.click();
+                    
+                    statusEl.textContent = 'Image saved';
+                }
+                
+                // Public initialization function
+                function init() {
+                    canvas = document.getElementById('molecule-canvas');
+                    ctx = canvas.getContext('2d');
+                    statusEl = document.getElementById('status');
+                    
+                    // Set up button click handlers
+                    document.querySelectorAll('.atom-btn').forEach(function(btn) {
+                        btn.addEventListener('click', function() {
+                            document.querySelectorAll('.atom-btn').forEach(function(b) { 
+                                b.classList.remove('active'); 
+                            });
+                            this.classList.add('active');
+                            selectedAtom = this.getAttribute('data-atom');
+                            mode = 'atom';
+                            statusEl.textContent = 'Selected: ' + selectedAtom + ' atom';
+                        });
+                    });
+                    
+                    document.querySelectorAll('.bond-btn').forEach(function(btn) {
+                        btn.addEventListener('click', function() {
+                            document.querySelectorAll('.bond-btn').forEach(function(b) { 
+                                b.classList.remove('active'); 
+                            });
+                            this.classList.add('active');
+                            selectedBond = this.getAttribute('data-bond');
+                            mode = 'bond';
+                            statusEl.textContent = 'Selected: ' + selectedBond + ' bond';
+                        });
+                    });
+                    
+                    document.getElementById('erase').addEventListener('click', function() {
+                        mode = mode === 'erase' ? 'atom' : 'erase';
+                        this.classList.toggle('active');
+                        if (mode === 'erase') {
+                            document.querySelectorAll('.atom-btn, .bond-btn').forEach(function(b) { 
+                                b.classList.remove('active'); 
+                            });
+                            document.getElementById('move').classList.remove('active');
+                            statusEl.textContent = 'Mode: Erase';
+                        } else {
+                            document.getElementById('C').classList.add('active');
+                            document.getElementById('single').classList.add('active');
+                            selectedAtom = 'C';
+                            selectedBond = 'single';
+                            statusEl.textContent = 'Mode: Place atoms';
+                        }
+                    });
+                    
+                    document.getElementById('move').addEventListener('click', function() {
+                        mode = mode === 'move' ? 'atom' : 'move';
+                        this.classList.toggle('active');
+                        if (mode === 'move') {
+                            document.querySelectorAll('.atom-btn, .bond-btn').forEach(function(b) { 
+                                b.classList.remove('active'); 
+                            });
+                            document.getElementById('erase').classList.remove('active');
+                            statusEl.textContent = 'Mode: Move atoms';
+                        } else {
+                            document.getElementById('C').classList.add('active');
+                            document.getElementById('single').classList.add('active');
+                            selectedAtom = 'C';
+                            selectedBond = 'single';
+                            statusEl.textContent = 'Mode: Place atoms';
+                        }
+                    });
+                    
+                    document.getElementById('optimize-btn').addEventListener('click', function() {
+                        if (atoms.length <= 1) {
+                            statusEl.textContent = 'Need at least 2 atoms to optimize';
+                            return;
+                        }
+                        
+                        if (optimizationAnimationId) {
+                            clearTimeout(optimizationAnimationId);
+                            optimizationAnimationId = null;
+                        }
+                        
+                        applyForceDirectedLayout();
+                    });
+                    
+                    document.getElementById('center-btn').addEventListener('click', function() {
+                        centerMolecule();
+                        statusEl.textContent = 'Molecule centered';
+                    });
+                    
+                    document.getElementById('clear-btn').addEventListener('click', function() {
+                        if (confirm('Are you sure you want to clear the canvas?')) {
+                            atoms = [];
+                            bonds = [];
+                            redraw();
+                            statusEl.textContent = 'Canvas cleared';
+                        }
+                    });
+                    
+                    document.getElementById('save-btn').addEventListener('click', function() {
+                        saveImage();
+                    });
+                    
+                    // Handle canvas mouse events
+                    canvas.addEventListener('mousedown', handleMouseDown);
+                    canvas.addEventListener('mousemove', handleMouseMove);
+                    canvas.addEventListener('mouseup', handleMouseUp);
+                    
+                    // Touch events for mobile
+                    canvas.addEventListener('touchstart', function(e) {
+                        e.preventDefault();
+                        var touch = e.touches[0];
+                        var mouseEvent = new MouseEvent('mousedown', {
+                            clientX: touch.clientX,
+                            clientY: touch.clientY
+                        });
+                        canvas.dispatchEvent(mouseEvent);
+                    });
+                    
+                    canvas.addEventListener('touchmove', function(e) {
+                        e.preventDefault();
+                        var touch = e.touches[0];
+                        var mouseEvent = new MouseEvent('mousemove', {
+                            clientX: touch.clientX,
+                            clientY: touch.clientY
+                        });
+                        canvas.dispatchEvent(mouseEvent);
+                    });
+                    
+                    canvas.addEventListener('touchend', function(e) {
+                        e.preventDefault();
+                        var mouseEvent = new MouseEvent('mouseup');
+                        canvas.dispatchEvent(mouseEvent);
+                    });
+                    
+                    // Initial resize and listen for window resize
+                    resizeCanvas();
+                    window.addEventListener('resize', resizeCanvas);
+                    
+                    // Initial draw
+                    redraw();
+                }
+                
+                // Return public methods
+                return {
+                    init: init
+                };
+            })();
+            
+            // Initialize the application when the DOM is ready
+            MoleculeBuilder.init();
+        });
+    </script>
+</body>
+</html>
