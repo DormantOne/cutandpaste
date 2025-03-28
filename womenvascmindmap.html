@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Women's Vascular Health Concept Map</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            overflow: hidden;
+            touch-action: none; /* Prevents browser handling of touch events */
+        }
+        
+        #concept-map-container {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            cursor: move;
+        }
+        
+        .concept {
+            position: absolute;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+        
+        .center-concept {
+            background-color: #9c27b0;
+            width: 160px;
+            height: 160px;
+            font-size: 18px;
+            z-index: 20;
+        }
+        
+        .primary-concept {
+            background-color: #3f51b5;
+            width: 120px;
+            height: 120px;
+            font-size: 14px;
+        }
+        
+        .secondary-concept {
+            background-color: #03a9f4;
+            width: 90px;
+            height: 90px;
+            font-size: 12px;
+        }
+        
+        .tertiary-concept {
+            background-color: #4caf50;
+            width: 70px;
+            height: 70px;
+            font-size: 11px;
+        }
+        
+        .concept:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .connection {
+            position: absolute;
+            background-color: #7986cb;
+            z-index: 5;
+            transform-origin: left center;
+        }
+        
+        .thick-connection {
+            height: 4px;
+        }
+        
+        .medium-connection {
+            height: 3px;
+        }
+        
+        .thin-connection {
+            height: 2px;
+        }
+        
+        #tooltip {
+            position: absolute;
+            display: none;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            max-width: 300px;
+            z-index: 100;
+        }
+        
+        #detail-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 300px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            display: none;
+            z-index: 30;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        #detail-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        #detail-content {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #555;
+        }
+        
+        #detail-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 20px;
+            height: 20px;
+            text-align: center;
+            line-height: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #999;
+        }
+        
+        #detail-close:hover {
+            color: #333;
+        }
+        
+        .fact-list {
+            margin-top: 10px;
+        }
+        
+        .fact-item {
+            background-color: #f5f5f5;
+            padding: 8px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+        
+        .relationship-list {
+            margin-top: 15px;
+        }
+        
+        .relationship-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .relationship-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        h2 {
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 16px;
+            color: #333;
+        }
+        
+        #title-overlay {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            z-index: 25;
+        }
+        
+        #instructions {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            font-size: 14px;
+            color: #555;
+            z-index: 25;
+            max-width: 250px;
+        }
+        
+        #main-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin: 0;
+        }
+        
+        #subtitle {
+            font-size: 14px;
+            color: #666;
+            margin: 5px 0 0 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="concept-map-container"></div>
+    
+    <div id="tooltip"></div>
+    
+    <div id="detail-panel">
+        <div id="detail-close">×</div>
+        <div id="detail-title"></div>
+        <div id="detail-content"></div>
+    </div>
+    
+    <div id="title-overlay">
+        <h1 id="main-title">Women's Vascular Health</h1>
+        <p id="subtitle">Interactive Concept Map</p>
+    </div>
+
+    <script>
+        // Define the concept data
+        const centerConcept = {
+            id: "vascular-health",
+            name: "WOMEN'S VASCULAR HEALTH",
+            type: "center-concept",
+            description: "Sex-specific considerations in vascular disease for women",
+            facts: [
+                "Women represent a distinct population in vascular disease",
+                "Traditionally underrepresented in research studies",
+                "Often present differently than male counterparts",
+                "Frequently diagnosed at later stages of disease",
+                "Risk factors and outcomes differ from men"
+            ]
+        };
+        
+        const primaryConcepts = [
+            {
+                id: "research-history",
+                name: "Research History",
+                type: "primary-concept",
+                angle: 0,
+                distance: 200,
+                connectionType: "thick-connection",
+                description: "Timeline of women's inclusion in vascular research",
+                facts: [
+                    "Pre-1990: Women largely excluded from clinical trials",
+                    "1991: NIH Office of Research on Women's Health formed",
+                    "1993: NIH Revitalization Act mandated inclusion of women",
+                    "2005: First women-specific study on aspirin for CVD prevention",
+                    "Women still underrepresented in vascular device trials"
+                ],
+                relationships: [
+                    { to: "risk-factors", strength: "strong", description: "Limited research has led to incomplete understanding of risk factors" },
+                    { to: "presentation", strength: "strong", description: "Research gaps contribute to mischaracterization of 'typical' symptoms" }
+                ]
+            },
+            {
+                id: "disease-types",
+                name: "Disease Types",
+                type: "primary-concept",
+                angle: 60,
+                distance: 200,
+                connectionType: "thick-connection",
+                description: "Common vascular conditions affecting women",
+                facts: [
+                    "Abdominal aortic aneurysms less common but rupture at smaller diameters",
+                    "Peripheral arterial disease affects women and men equally but presents differently",
+                    "Women more likely to present with critical limb ischemia than claudication",
+                    "Women have higher rates of stroke with carotid interventions",
+                    "Growing recognition of mesenteric disease in women"
+                ],
+                relationships: [
+                    { to: "risk-factors", strength: "strong", description: "Disease patterns influenced by female-specific factors" },
+                    { to: "outcomes", strength: "medium", description: "Disease types affect treatment options and outcomes" }
+                ]
+            },
+            {
+                id: "risk-factors",
+                name: "Risk Factors",
+                type: "primary-concept",
+                angle: 120,
+                distance: 200,
+                connectionType: "thick-connection",
+                description: "Specific risk factors affecting vascular health in women",
+                facts: [
+                    "Women present with PAD 10-20 years later than men (estrogen protection)",
+                    "Smoking has 7x greater risk for women vs. non-smoking women",
+                    "Diabetes negates estrogen protection in premenopausal women",
+                    "Depression is strong independent risk factor for women but not men",
+                    "Women less likely to receive statin therapy when indicated"
+                ],
+                relationships: [
+                    { to: "reproductive-history", strength: "strong", description: "Hormonal factors significantly impact vascular risk" },
+                    { to: "presentation", strength: "medium", description: "Risk factors influence disease presentation" }
+                ]
+            },
+            {
+                id: "reproductive-history",
+                name: "Reproductive History",
+                type: "primary-concept",
+                angle: 180,
+                distance: 200,
+                connectionType: "thick-connection",
+                description: "Impact of reproductive events on vascular disease risk",
+                facts: [
+                    "Early menarche (<10 years) associated with 4x higher cardiovascular events",
+                    "Pregnancy complications predict future vascular disease",
+                    "PCOS increases cardiovascular risk by 30%",
+                    "Premature menopause increases cardiovascular disease risk by 36%",
+                    "Breastfeeding >2 years reduces coronary heart disease by 23%"
+                ],
+                relationships: [
+                    { to: "risk-factors", strength: "strong", description: "Reproductive events modify traditional risk factors" },
+                    { to: "treatment", strength: "medium", description: "Reproductive history affects treatment decisions" }
+                ]
+            },
+            {
+                id: "presentation",
+                name: "Presentation",
+                type: "primary-concept",
+                angle: 240,
+                distance: 200,
+                connectionType: "thick-connection",
+                description: "How vascular disease manifests in women",
+                facts: [
+                    "Women more likely to have asymptomatic PAD",
+                    "Symptoms often misattributed to arthritis or neuropathy",
+                    "Women more likely diagnosed at severe stages (critical limb ischemia)",
+                    "Women present with different symptoms than men - not 'atypical'",
+                    "Women often decrease walking speed rather than report claudication"
+                ],
+                relationships: [
+                    { to: "outcomes", strength: "strong", description: "Later presentation leads to poorer outcomes" },
+                    { to: "treatment", strength: "medium", description: "Presentation affects treatment options" }
+                ]
+            },
+            {
+                id: "outcomes",
+                name: "Outcomes",
+                type: "primary-concept",
+                angle: 300,
+                distance: 200,
+                connectionType: "thick-connection",
+                description: "Sex-specific differences in vascular treatment outcomes",
+                facts: [
+                    "Women with aneurysms have 35% higher mortality than men",
+                    "Women with PAD have 14% higher risk of death than men",
+                    "Women 18% more likely to experience graft thrombosis",
+                    "Higher rates of access complications and wound issues",
+                    "Women less likely to receive endovascular aneurysm repair"
+                ],
+                relationships: [
+                    { to: "treatment", strength: "strong", description: "Outcomes should influence treatment selection" },
+                    { to: "presentation", strength: "medium", description: "Later presentation contributes to worse outcomes" }
+                ]
+            }
+        ];
+        
+        const secondaryConcepts = [
+            {
+                id: "research-gaps",
+                name: "Research Gaps",
+                type: "secondary-concept",
+                parentId: "research-history",
+                angle: 350,
+                distance: 140,
+                connectionType: "medium-connection",
+                description: "Current deficiencies in women's vascular research",
+                facts: [
+                    "78% of FDA-approved cardiovascular devices didn't report sex in 28% of trials",
+                    "Only 31.5% of endovascular trial participants are female",
+                    "Only 27% of surgical revascularization studies include women",
+                    "Animal studies predominantly use male subjects",
+                    "22% of surgical studies don't report sex as a variable"
+                ]
+            },
+            {
+                id: "depression-risk",
+                name: "Depression",
+                type: "secondary-concept",
+                parentId: "risk-factors",
+                angle: 140,
+                distance: 140,
+                connectionType: "medium-connection",
+                description: "Depression as a sex-specific risk factor",
+                facts: [
+                    "Strongest independent PAD risk factor for women",
+                    "Not significant as a risk factor in men",
+                    "Associated with 13% greater risk of amputation",
+                    "Linked to 17% greater mortality risk",
+                    "Often undertreated in female vascular patients"
+                ]
+            },
+            {
+                id: "aneurysms",
+                name: "Aneurysms",
+                type: "secondary-concept",
+                parentId: "disease-types",
+                angle: 45,
+                distance: 140,
+                connectionType: "medium-connection",
+                description: "Aortic aneurysm characteristics in women",
+                facts: [
+                    "Lower prevalence but faster growth rate in women",
+                    "Women's aneurysms rupture at smaller diameters",
+                    "Women 1.18x more likely to present with rupture",
+                    "Women more likely to receive open repair than EVAR",
+                    "Insufficient screening recommendations for women"
+                ]
+            },
+            {
+                id: "pad",
+                name: "Peripheral Arterial Disease",
+                type: "secondary-concept",
+                parentId: "disease-types",
+                angle: 75,
+                distance: 140,
+                connectionType: "medium-connection",
+                description: "Peripheral arterial disease in women",
+                facts: [
+                    "Equally prevalent in men and women",
+                    "Disability and mortality increasing faster in women",
+                    "Women 2-3x higher relative increase in disability-adjusted life years",
+                    "Women more likely to present with critical limb ischemia",
+                    "Disproportionately affects women of color"
+                ]
+            },
+            {
+                id: "hormonal-factors",
+                name: "Hormonal Factors",
+                type: "secondary-concept",
+                parentId: "risk-factors",
+                angle: 105,
+                distance: 140,
+                connectionType: "medium-connection",
+                description: "Impact of hormones on vascular disease",
+                facts: [
+                    "Estrogen provides protection via nitric oxide and prostacyclin",
+                    "Post-menopausal women's PAD rates meet or exceed men's",
+                    "Hormone therapy timing hypothesis: benefit early, harm late",
+                    "Dyslipidemia patterns change after menopause",
+                    "Vasomotor symptoms linked to increased cardiovascular risk"
+                ]
+            },
+            {
+                id: "pregnancy-complications",
+                name: "Pregnancy Complications",
+                type: "secondary-concept",
+                parentId: "reproductive-history",
+                angle: 170,
+                distance: 140,
+                connectionType: "medium-connection",
+                description: "Pregnancy events that predict vascular risk",
+                facts: [
+                    "Preeclampsia increases risk of peripartum stroke and MI",
+                    "Gestational diabetes: 2x risk of coronary artery calcification",
+                    "Preterm delivery increases cardiovascular mortality risk",
+                    "Low birth weight associated with maternal atherosclerosis",
+                    "Multiple miscarriages linked to increased cardiovascular risk"
+                ]
+            },
+            {
+                id: "menopause",
+                name: "Menopause",
+                type: "secondary-concept",
+                parentId: "reproductive-history",
+                angle: 190,
+                distance: 140,
+                connectionType: "medium-connection",
+                description: "Vascular impacts of menopause transition",
+                facts: [
+                    "Identified by AHA as period of accelerated cardiovascular risk",
+                    "Increases in total cholesterol, LDL, and apolipoprotein B",
+                    "Changes in body composition and fat distribution",
+                    "Surgical menopause has 87% increased cardiovascular risk",
+                    "Adverse vascular remodeling with increased vessel stiffness"
+                ]
+            },
+            {
+                id: "diagnostic-challenges",
+                name: "Diagnostic Challenges",
+                type: "secondary-concept",
+                parentId: "presentation",
+                angle: 225,
+                distance: 140,
+                connectionType: "medium-connection",
+                description: "Obstacles in diagnosing vascular disease in women",
+                facts: [
+                    "Traditional diagnostic criteria based on male presentations",
+                    "Symptoms often attributed to arthritis or aging",
+                    "Decreased activity often not recognized as claudication",
+                    "Screening guidelines insufficient for female-specific risk",
+                    "Disease often missed until advanced stages"
+                ]
+            },
+            {
+                id: "care-seeking",
+                name: "Care-Seeking Behavior",
+                type: "secondary-concept",
+                parentId: "presentation",
+                angle: 255,
+                distance: 140,
+                connectionType: "medium-connection",
+                description: "Factors affecting women's access to care",
+                facts: [
+                    "Women often caregivers with less time for self-care",
+                    "Higher tolerance for pain and discomfort expected of women",
+                    "Socioeconomic factors affect access to specialty care",
+                    "Support systems often lacking for female patients",
+                    "Education level affects recognition of serious symptoms"
+                ]
+            },
+            {
+                id: "procedural-outcomes",
+                name: "Procedural Outcomes",
+                type: "secondary-concept",
+                parentId: "outcomes",
+                angle: 285,
+                distance: 140,
+                connectionType: "medium-connection",
+                description: "Sex-based differences in intervention outcomes",
+                facts: [
+                    "Higher pedal access failure rates in women",
+                    "Increased wound complications in female patients",
+                    "Greater risk of surgical bleeding in women",
+                    "Higher short-term limb loss after surgical bypass",
+                    "Increased post-operative stroke risk with carotid interventions"
+                ]
+            },
+            {
+                id: "treatment-gaps",
+                name: "Treatment Gaps",
+                type: "secondary-concept",
+                parentId: "outcomes",
+                angle: 315,
+                distance: 140,
+                connectionType: "medium-connection",
+                description: "Disparities in vascular treatment for women",
+                facts: [
+                    "42% of women with ruptured aneurysms receive no intervention vs. 23% of men",
+                    "Women less likely to receive statins when indicated",
+                    "Device sizes often inadequate for smaller female vessels",
+                    "Men twice as likely to have optimal control of comorbidities",
+                    "Women often excluded from standard treatment algorithms"
+                ]
+            }
+        ];
+        
+        const tertiaryConcepts = [
+            {
+                id: "aaa-screening",
+                name: "AAA Screening",
+                type: "tertiary-concept",
+                parentId: "research-gaps",
+                angle: 340,
+                distance: 110,
+                connectionType: "thin-connection",
+                description: "Abdominal aortic aneurysm screening guidelines for women",
+                facts: [
+                    "USPSTF: Insufficient evidence for AAA screening in women smokers",
+                    "SVS recommends AAA screening for both men and women who smoke",
+                    "2019 meta-analysis on AAA screening underpowered for female risk",
+                    "Women's aneurysms rupture at smaller diameters but not screened",
+                    "Insurance coverage follows USPSTF guidelines, limiting women's access"
+                ]
+            },
+            {
+                id: "pad-screening",
+                name: "PAD Screening",
+                type: "tertiary-concept",
+                parentId: "research-gaps",
+                angle: 0,
+                distance: 110,
+                connectionType: "thin-connection",
+                description: "Peripheral arterial disease screening deficiencies for women",
+                facts: [
+                    "No sex-specific PAD screening guidelines despite presentation differences",
+                    "Women more likely to have asymptomatic PAD, missing detection",
+                    "Standard ABI testing may miss disease in women",
+                    "Screening often triggered by symptoms women don't typically report",
+                    "Women of color particularly affected by lack of PAD screening"
+                ]
+            },
+            {
+                id: "pcos",
+                name: "PCOS",
+                type: "tertiary-concept",
+                parentId: "hormonal-factors",
+                angle: 95,
+                distance: 110,
+                connectionType: "thin-connection",
+                description: "Polycystic ovary syndrome and vascular risk",
+                facts: [
+                    "Affects 5-13% of women",
+                    "30% higher risk of cardiovascular disease",
+                    "Higher BMI, dyslipidemia, hypertension and insulin resistance",
+                    "Elevated inflammatory markers (C-reactive protein)",
+                    "Threefold higher risk of adverse pregnancy outcomes"
+                ]
+            },
+            {
+                id: "early-menarche",
+                name: "Early Menarche",
+                type: "tertiary-concept",
+                parentId: "pregnancy-complications",
+                angle: 160,
+                distance: 110,
+                connectionType: "thin-connection",
+                description: "Impact of early first menstruation on vascular health",
+                facts: [
+                    "Menarche before age 10 associated with future obesity",
+                    "15-30% higher risk of future cardiovascular disease",
+                    "Associated with metabolic syndrome in adulthood",
+                    "4x risk of major adverse cardiovascular events over 6 years",
+                    "Independent of other sociodemographic factors"
+                ]
+            },
+            {
+                id: "breastfeeding",
+                name: "Breastfeeding",
+                type: "tertiary-concept",
+                parentId: "menopause",
+                angle: 180,
+                distance: 110,
+                connectionType: "thin-connection",
+                description: "Protective effects of breastfeeding on vascular health",
+                facts: [
+                    "Associated with reduced aortic calcification",
+                    "Lower coronary artery calcium scores",
+                    "Cumulative breastfeeding >2 years reduces coronary heart disease by 23%",
+                    "Provides protection independent of other risk factors",
+                    "Effect persists into post-menopausal years"
+                ]
+            },
+            {
+                id: "depression",
+                name: "Depression",
+                type: "secondary-concept",
+                parentId: "risk-factors",
+                angle: 135,
+                distance: 140,
+                connectionType: "medium-connection",
+                description: "Depression as a sex-specific risk factor",
+                facts: [
+                    "Strongest independent PAD risk factor for women",
+                    "Not significant as a risk factor in men",
+                    "Associated with 13% greater risk of amputation",
+                    "Linked to 17% greater mortality risk",
+                    "Often undertreated in female vascular patients"
+                ]
+            }
+        ];
+        
+        // Main function to initialize the concept map
+        function initializeConceptMap() {
+            const container = document.getElementById('concept-map-container');
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            
+            // Create center concept
+            createConcept(centerConcept, centerX, centerY);
+            
+            // Create primary concepts
+            primaryConcepts.forEach(concept => {
+                const angleRad = concept.angle * (Math.PI / 180);
+                const x = centerX + Math.cos(angleRad) * concept.distance;
+                const y = centerY + Math.sin(angleRad) * concept.distance;
+                
+                createConcept(concept, x, y);
+                createConnection(centerX, centerY, x, y, concept.connectionType, concept.angle);
+            });
+            
+            // Create secondary concepts
+            secondaryConcepts.forEach(concept => {
+                const parent = primaryConcepts.find(p => p.id === concept.parentId);
+                if (parent) {
+                    const parentAngleRad = parent.angle * (Math.PI / 180);
+                    const parentX = centerX + Math.cos(parentAngleRad) * parent.distance;
+                    const parentY = centerY + Math.sin(parentAngleRad) * parent.distance;
+                    
+                    const angleRad = concept.angle * (Math.PI / 180);
+                    const x = parentX + Math.cos(angleRad) * concept.distance;
+                    const y = parentY + Math.sin(angleRad) * concept.distance;
+                    
+                    createConcept(concept, x, y);
+                    createConnection(parentX, parentY, x, y, concept.connectionType, concept.angle);
+                }
+            });
+            
+            // Create tertiary concepts
+            tertiaryConcepts.forEach(concept => {
+                const parent = secondaryConcepts.find(p => p.id === concept.parentId);
+                if (parent) {
+                    const grandParent = primaryConcepts.find(p => p.id === parent.parentId);
+                    if (grandParent) {
+                        const grandParentAngleRad = grandParent.angle * (Math.PI / 180);
+                        const grandParentX = centerX + Math.cos(grandParentAngleRad) * grandParent.distance;
+                        const grandParentY = centerY + Math.sin(grandParentAngleRad) * grandParent.distance;
+                        
+                        const parentAngleRad = parent.angle * (Math.PI / 180);
+                        const parentX = grandParentX + Math.cos(parentAngleRad) * parent.distance;
+                        const parentY = grandParentY + Math.sin(parentAngleRad) * parent.distance;
+                        
+                        const angleRad = concept.angle * (Math.PI / 180);
+                        const x = parentX + Math.cos(angleRad) * concept.distance;
+                        const y = parentY + Math.sin(angleRad) * concept.distance;
+                        
+                        createConcept(concept, x, y);
+                        createConnection(parentX, parentY, x, y, concept.connectionType, concept.angle);
+                    }
+                }
+            });
+        }
+        
+        // Function to create a concept node
+        function createConcept(concept, x, y) {
+            const conceptElement = document.createElement('div');
+            conceptElement.className = `concept ${concept.type}`;
+            conceptElement.id = concept.id;
+            conceptElement.textContent = concept.name;
+            conceptElement.style.left = `${x - (conceptElement.offsetWidth || 120) / 2}px`;
+            conceptElement.style.top = `${y - (conceptElement.offsetHeight || 120) / 2}px`;
+            
+            // Add event listeners
+            conceptElement.addEventListener('mouseover', (e) => {
+                e.stopPropagation(); // Prevent drag while interacting with nodes
+                showTooltip(concept, e);
+            });
+            conceptElement.addEventListener('mouseout', hideTooltip);
+            conceptElement.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent drag while clicking nodes
+                showDetails(concept);
+            });
+            
+            // Add touch event handlers
+            conceptElement.addEventListener('touchstart', (e) => {
+                e.stopPropagation(); // Prevent drag while touching nodes
+            });
+            conceptElement.addEventListener('touchend', (e) => {
+                e.stopPropagation(); // Prevent drag while touching nodes
+                showDetails(concept);
+                hideTooltip(); // Hide any tooltips on touch end
+            });
+            
+            document.getElementById('concept-map-container').appendChild(conceptElement);
+            
+            // Update position after appending to account for actual size
+            setTimeout(() => {
+                conceptElement.style.left = `${x - conceptElement.offsetWidth / 2}px`;
+                conceptElement.style.top = `${y - conceptElement.offsetHeight / 2}px`;
+            }, 0);
+            
+            return conceptElement;
+        }
+        
+        // Function to create connection lines between concepts
+        function createConnection(x1, y1, x2, y2, type, angle) {
+            const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+            const angleRad = Math.atan2(y2 - y1, x2 - x1);
+            
+            const connection = document.createElement('div');
+            connection.className = `connection ${type}`;
+            connection.style.width = `${length}px`;
+            connection.style.left = `${x1}px`;
+            connection.style.top = `${y1}px`;
+            connection.style.transform = `rotate(${angleRad}rad)`;
+            
+            document.getElementById('concept-map-container').appendChild(connection);
+        }
+        
+        // Function to show tooltip on hover
+        function showTooltip(concept, event) {
+            const tooltip = document.getElementById('tooltip');
+            tooltip.textContent = concept.description;
+            tooltip.style.left = `${event.pageX + 15}px`;
+            tooltip.style.top = `${event.pageY + 15}px`;
+            tooltip.style.display = 'block';
+        }
+        
+        // Function to hide tooltip
+        function hideTooltip() {
+            document.getElementById('tooltip').style.display = 'none';
+        }
+        
+        // Function to show concept details in side panel
+        function showDetails(concept) {
+            const detailPanel = document.getElementById('detail-panel');
+            const detailTitle = document.getElementById('detail-title');
+            const detailContent = document.getElementById('detail-content');
+            
+            detailTitle.textContent = concept.name;
+            
+            // Create content with description and facts
+            let content = `<p>${concept.description}</p>`;
+            
+            // Add facts
+            if (concept.facts && concept.facts.length > 0) {
+                content += `<h2>Key Facts</h2><div class="fact-list">`;
+                concept.facts.forEach(fact => {
+                    content += `<div class="fact-item">• ${fact}</div>`;
+                });
+                content += `</div>`;
+            }
+            
+            // Add relationships if they exist
+            if (concept.relationships && concept.relationships.length > 0) {
+                content += `<h2>Relationships</h2><div class="relationship-list">`;
+                concept.relationships.forEach(rel => {
+                    const relatedConcept = [...primaryConcepts, ...secondaryConcepts, ...tertiaryConcepts].find(c => c.id === rel.to) || 
+                                        (rel.to === "vascular-health" ? centerConcept : null);
+                    if (relatedConcept) {
+                        const color = relatedConcept.type === "primary-concept" ? "#3f51b5" : 
+                                    relatedConcept.type === "secondary-concept" ? "#03a9f4" :
+                                    relatedConcept.type === "tertiary-concept" ? "#4caf50" : "#9c27b0";
+                                    
+                        content += `<div class="relationship-item">
+                            <div class="relationship-dot" style="background-color: ${color}"></div>
+                            <span><b>${relatedConcept.name}</b>: ${rel.description}</span>
+                        </div>`;
+                    }
+                });
+                content += `</div>`;
+            }
+            
+            detailContent.innerHTML = content;
+            detailPanel.style.display = 'block';
+        }
+        
+        // Close detail panel
+        document.getElementById('detail-close').addEventListener('click', () => {
+            document.getElementById('detail-panel').style.display = 'none';
+        });
+        
+        // Variables for drag functionality
+        let isDragging = false;
+        let startX, startY;
+        let offsetX = 0, offsetY = 0;
+        let currentX = 0, currentY = 0;
+        
+        // Function to handle drag start
+        function handleDragStart(e) {
+            // Don't drag if clicking on a concept node
+            if (e.target.classList.contains('concept')) return;
+            
+            isDragging = true;
+            
+            // Get start position (handle both mouse and touch)
+            if (e.type === 'mousedown') {
+                startX = e.clientX;
+                startY = e.clientY;
+                // Prevent text selection while dragging
+                e.preventDefault();
+            } else if (e.type === 'touchstart') {
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+            }
+            
+            // Change cursor
+            document.getElementById('concept-map-container').style.cursor = 'grabbing';
+        }
+        
+        // Function to handle drag
+        function handleDrag(e) {
+            if (!isDragging) return;
+            
+            let currentClientX, currentClientY;
+            
+            // Get current position (handle both mouse and touch)
+            if (e.type === 'mousemove') {
+                currentClientX = e.clientX;
+                currentClientY = e.clientY;
+                e.preventDefault();
+            } else if (e.type === 'touchmove') {
+                currentClientX = e.touches[0].clientX;
+                currentClientY = e.touches[0].clientY;
+                e.preventDefault(); // Prevent scrolling while dragging
+            }
+            
+            // Calculate how far we've moved
+            const deltaX = currentClientX - startX;
+            const deltaY = currentClientY - startY;
+            
+            // Update current position
+            currentX = offsetX + deltaX;
+            currentY = offsetY + deltaY;
+            
+            // Move the entire container instead of individual elements
+            const container = document.getElementById('concept-map-container');
+            container.style.transform = `translate(${currentX}px, ${currentY}px)`;
+        }
+        
+        // Function to handle drag end
+        function handleDragEnd() {
+            if (!isDragging) return;
+            
+            isDragging = false;
+            
+            // Save the current offset
+            offsetX = currentX;
+            offsetY = currentY;
+            
+            // Reset cursor
+            document.getElementById('concept-map-container').style.cursor = 'move';
+        }
+        
+        // Initialize the concept map when the page loads
+        window.addEventListener('load', () => {
+            initializeConceptMap();
+            
+            // Add event listeners for dragging (mouse)
+            const container = document.getElementById('concept-map-container');
+            container.addEventListener('mousedown', handleDragStart);
+            window.addEventListener('mousemove', handleDrag);
+            window.addEventListener('mouseup', handleDragEnd);
+            
+            // Add event listeners for dragging (touch)
+            container.addEventListener('touchstart', handleDragStart, { passive: false });
+            window.addEventListener('touchmove', handleDrag, { passive: false });
+            window.addEventListener('touchend', handleDragEnd);
+        });
+        
+        // Resize event handler
+        window.addEventListener('resize', () => {
+            // Reset offsets
+            offsetX = 0;
+            offsetY = 0;
+            currentX = 0;
+            currentY = 0;
+            
+            // Rebuild the map
+            document.getElementById('concept-map-container').innerHTML = '';
+            document.getElementById('concept-map-container').style.transform = '';
+            initializeConceptMap();
+        });
+    </script>
+</body>
+</html>
