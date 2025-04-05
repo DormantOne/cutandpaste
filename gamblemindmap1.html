@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>The Rise of Gambling Disorder Concept Map</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f8f9fa;
+      overflow: hidden;
+      touch-action: none; /* Prevents browser handling of touch events */
+    }
+
+    #concept-map-container {
+      width: 100%;
+      height: 100vh;
+      position: relative;
+      cursor: move;
+    }
+
+    .concept {
+      position: absolute;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+      color: white;
+      font-weight: bold;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      z-index: 10;
+    }
+
+    .center-concept {
+      background-color: #9c27b0;
+      width: 160px;
+      height: 160px;
+      font-size: 18px;
+      z-index: 20;
+    }
+
+    .primary-concept {
+      background-color: #3f51b5;
+      width: 120px;
+      height: 120px;
+      font-size: 14px;
+    }
+
+    .secondary-concept {
+      background-color: #03a9f4;
+      width: 90px;
+      height: 90px;
+      font-size: 12px;
+    }
+
+    .tertiary-concept {
+      background-color: #4caf50;
+      width: 70px;
+      height: 70px;
+      font-size: 11px;
+    }
+
+    .concept:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .connection {
+      position: absolute;
+      background-color: #7986cb;
+      z-index: 5;
+      transform-origin: left center;
+    }
+
+    .thick-connection {
+      height: 4px;
+    }
+
+    .medium-connection {
+      height: 3px;
+    }
+
+    .thin-connection {
+      height: 2px;
+    }
+
+    #tooltip {
+      position: absolute;
+      display: none;
+      background-color: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 14px;
+      max-width: 300px;
+      z-index: 100;
+    }
+
+    #detail-panel {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 300px;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      padding: 20px;
+      display: none;
+      z-index: 30;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    #detail-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    #detail-content {
+      font-size: 14px;
+      line-height: 1.5;
+      color: #555;
+    }
+
+    #detail-close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 20px;
+      height: 20px;
+      text-align: center;
+      line-height: 20px;
+      cursor: pointer;
+      font-weight: bold;
+      color: #999;
+    }
+
+    #detail-close:hover {
+      color: #333;
+    }
+
+    .fact-list {
+      margin-top: 10px;
+    }
+
+    .fact-item {
+      background-color: #f5f5f5;
+      padding: 8px;
+      border-radius: 5px;
+      margin-bottom: 5px;
+      font-size: 13px;
+    }
+
+    .relationship-list {
+      margin-top: 15px;
+    }
+
+    .relationship-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .relationship-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+
+    h2 {
+      margin-top: 20px;
+      margin-bottom: 10px;
+      font-size: 16px;
+      color: #333;
+    }
+
+    #title-overlay {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 10px 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      z-index: 25;
+    }
+
+    #instructions {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 10px 15px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      font-size: 14px;
+      color: #555;
+      z-index: 25;
+      max-width: 250px;
+    }
+
+    #main-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #333;
+      margin: 0;
+    }
+
+    #subtitle {
+      font-size: 14px;
+      color: #666;
+      margin: 5px 0 0 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="concept-map-container"></div>
+
+  <div id="tooltip"></div>
+
+  <div id="detail-panel">
+    <div id="detail-close">×</div>
+    <div id="detail-title"></div>
+    <div id="detail-content"></div>
+  </div>
+
+  <div id="title-overlay">
+    <h1 id="main-title">The Rise of Gambling Disorder</h1>
+    <p id="subtitle">Interactive Mind Map</p>
+  </div>
+
+  <script>
+    // =========================
+    // DEFINE CONCEPTS & NODES
+    // =========================
+
+    // Center Concept
+    const centerConcept = {
+      id: "gambling-disorder",
+      name: "THE RISE OF\nGAMBLING DISORDER",
+      type: "center-concept",
+      description: "A rapidly growing behavioral addiction with significant clinical and public health implications",
+      facts: [
+        "Placed in the Substance-Related and Addictive Disorders category in DSM-5",
+        "Increasing online access has caused a surge in cases",
+        "Carries one of the highest risks of suicidal behavior among addictions",
+        "Often under-screened in clinical practice"
+      ]
+    };
+
+    // PRIMARY Concepts
+    const primaryConcepts = [
+      {
+        id: "intro-overview",
+        name: "Introduction\n& Overview",
+        type: "primary-concept",
+        angle: 0,
+        distance: 200,
+        connectionType: "thick-connection",
+        description: "Key themes of talk: growing prevalence, digital era challenges, significance of screening",
+        facts: [
+          "Speaker: Dr. Kavita Fischer",
+          "Focus on rising prevalence and rapid expansion of legal access",
+          "Stigma & hidden nature of gambling disorders",
+          "Any clinician can incorporate quick screening methods"
+        ],
+        relationships: []
+      },
+      {
+        id: "history-legalization",
+        name: "History &\nLegalization",
+        type: "primary-concept",
+        angle: 60,
+        distance: 200,
+        connectionType: "thick-connection",
+        description: "Legal landmarks & transitions from restricted to widespread, state-based legalization",
+        facts: [
+          "1961 Federal Wire Act: restricted sports betting across state lines",
+          "2011 Reinterpretation: states allowed to legalize online gambling",
+          "2018 Supreme Court ruling: other states (besides NV) permit sports betting",
+          "Now 7 states with iGaming (online casino) + 38 with some sports betting"
+        ],
+        relationships: []
+      },
+      {
+        id: "prevalence-impact",
+        name: "Prevalence &\nImpact",
+        type: "primary-concept",
+        angle: 120,
+        distance: 200,
+        connectionType: "thick-connection",
+        description: "Societal & economic implications, focusing on Pennsylvania and nationwide trends",
+        facts: [
+          "PA second to NV in total gambling losses (~ $6.1B in 2024)",
+          "Online gambling revenue growing yearly (2.1B in 2024)",
+          "20% of PA adults gamble online; ~50% of them report problems",
+          "Calls to helpline rising (nearly half related to online gambling)"
+        ],
+        relationships: []
+      },
+      {
+        id: "diagnosis-neurobiology",
+        name: "Diagnosis &\nNeurobiology",
+        type: "primary-concept",
+        angle: 180,
+        distance: 200,
+        connectionType: "thick-connection",
+        description: "DSM-5-TR criteria, shift from impulse control to behavioral addiction, brain mechanisms",
+        facts: [
+          "Meets 4+ of 9 DSM-5-TR criteria in 12 months",
+          "Central features: tolerance, chasing losses, withdrawal-like irritability",
+          "Neurocircuitry involves dopamine (reward), frontal cortex, insula, amygdala",
+          "Similarities to substance use disorders in craving & compulsion"
+        ],
+        relationships: []
+      },
+      {
+        id: "risk-vulnerable",
+        name: "Vulnerable\nPopulations",
+        type: "primary-concept",
+        angle: 240,
+        distance: 200,
+        connectionType: "thick-connection",
+        description: "Groups at higher risk include teens, older adults, women, veterans, etc.",
+        facts: [
+          "Adolescents: impacted by loot boxes, gaming crossovers, easy access via parents",
+          "Older adults: social isolation, retirement losses, stigma, cognitive changes",
+          "Women: often chase escape from stress/loneliness; can progress more quickly",
+          "High suicide risk: ~1 in 5 attempt suicide; often comorbid with depression, SUD"
+        ],
+        relationships: []
+      },
+      {
+        id: "screening-treatment",
+        name: "Screening &\nTreatment",
+        type: "primary-concept",
+        angle: 300,
+        distance: 200,
+        connectionType: "thick-connection",
+        description: "Key screening tools & multifaceted treatment approaches (meds, therapy, self-help)",
+        facts: [
+          "Lie-Bet: 2-question screener (high sensitivity)",
+          "GA 20 Questions & Brief Biosocial Gambling Screen also used",
+          "No FDA-approved meds; naltrexone off-label can help, NAC studied",
+          "MI + CBT is effective, Gamblers Anonymous or self-exclusion are options"
+        ],
+        relationships: []
+      },
+      {
+        id: "public-health",
+        name: "Public Health\n& Advocacy",
+        type: "primary-concept",
+        angle: 360,
+        distance: 200,
+        connectionType: "thick-connection",
+        description: "Need for policy changes & consumer protections to address rapid, underregulated expansion",
+        facts: [
+          "Comparisons to Big Tobacco & opioid crises: limited regulation, heavy marketing",
+          "Industry profits largely from disordered gamblers (60-70% revenue)",
+          "Online & mobile platforms exploit data tracking, bonuses, VIP hosts",
+          "Greater research, regulation, & physician advocacy are essential"
+        ],
+        relationships: []
+      }
+    ];
+
+    // SECONDARY Concepts
+    const secondaryConcepts = [
+      {
+        id: "online-gambling",
+        name: "Online Gambling",
+        type: "secondary-concept",
+        parentId: "history-legalization",
+        angle: 30,
+        distance: 140,
+        connectionType: "medium-connection",
+        description: "Exponential growth via smartphones, ease of access, and state-by-state laws",
+        facts: [
+          "Sports betting now in 30+ states plus DC & PR",
+          "Online casinos: 7 states, more legislation pending",
+          "Live-dealer features, chat functions, free-play modes",
+          "Many states rely on gambling tax revenue; minimal consumer protection"
+        ]
+      },
+      {
+        id: "blurred-lines",
+        name: "Blurred Lines",
+        type: "secondary-concept",
+        // NOW PARENTED BY 'history-legalization' INSTEAD OF 'diagnosis-neurobiology'
+        parentId: "history-legalization",
+        angle: 100,
+        distance: 140,
+        connectionType: "medium-connection",
+        description: "Gaming vs. gambling overlap (loot boxes, microtransactions, day-trading apps)",
+        facts: [
+          "Many video games have randomized reward structures (e.g., loot boxes)",
+          "Social casinos: 'fake currency' can sometimes be converted or used illicitly",
+          "Day-trading/financial apps: repeated checking, risk patterns akin to gambling",
+          "Wider net of potential 'gateway' behaviors, especially for youth"
+        ]
+      },
+      {
+        id: "march-madness",
+        name: "Sports Betting",
+        type: "secondary-concept",
+        parentId: "prevalence-impact",
+        angle: 100,
+        distance: 140,
+        connectionType: "medium-connection",
+        description: "Major events like March Madness and Super Bowl drive massive betting volume",
+        facts: [
+          "March Madness wagers > $2.7B; bigger than Super Bowl",
+          "National surge in internet searches for gambling help after state legalization",
+          "Relentless marketing fosters new bettors",
+          "Lancet Commission warns of gambling’s global public health threat"
+        ]
+      },
+      {
+        id: "marketing-tactics",
+        name: "Casino Tactics",
+        type: "secondary-concept",
+        parentId: "risk-vulnerable",
+        angle: 220,
+        distance: 140,
+        connectionType: "medium-connection",
+        description: "Bonuses, VIP hosts, data tracking, design features that keep players hooked",
+        facts: [
+          "VIP hosts track usage, offer free credits or comps at critical moments",
+          "Apps have microphone access, real-time user data (per Terms & Conditions)",
+          "Operators encourage 'reversing withdrawals' and chasing losses",
+          "Aggressive promotion to younger/new bettors"
+        ]
+      },
+      {
+        id: "pharmacotherapy",
+        name: "Pharmacological\nOptions",
+        type: "secondary-concept",
+        parentId: "screening-treatment",
+        angle: 320,
+        distance: 140,
+        connectionType: "medium-connection",
+        description: "No FDA-approved meds; some off-label or investigational approaches",
+        facts: [
+          "Naltrexone: mixed evidence, can benefit severe urges / family hx of AUD",
+          "N-Acetylcysteine (NAC): promising in small studies, well-tolerated",
+          "SSRIs show inconsistent outcomes; antipsychotics generally not helpful",
+          "Dopamine agonists (for RLS/Parkinson’s) can trigger gambling behaviors"
+        ]
+      },
+      {
+        id: "psychosocial",
+        name: "Psychological\n& Self-Help",
+        type: "secondary-concept",
+        parentId: "screening-treatment",
+        angle: 340,
+        distance: 140,
+        connectionType: "medium-connection",
+        description: "Evidence-based therapies, self-exclusion, Gamblers Anonymous",
+        facts: [
+          "CBT + motivational interviewing is effective",
+          "Gamblers Anonymous: widely available, though no formal RCT data",
+          "Self-exclusion programs exist (1 year, 5 years, lifetime) – but follow-up is tricky",
+          "Digital blockers (Gamban, BetBlocker) and phone restrictions can help"
+        ]
+      }
+    ];
+
+    // TERTIARY Concepts
+    const tertiaryConcepts = [
+      {
+        id: "adolescents-seniors",
+        name: "At-Risk:\nTeens/Seniors",
+        type: "tertiary-concept",
+        parentId: "risk-vulnerable",
+        angle: 260,
+        distance: 110,
+        connectionType: "thin-connection",
+        description: "Unique drivers of gambling in younger and older populations",
+        facts: [
+          "Teens: impulsivity, peer pressure, stealth sign-ups with parent data",
+          "Loot boxes in video games can 'groom' kids into gambling behaviors",
+          "Older adults: social isolation, quick financial ruin, less time to recoup losses",
+          "Cognitive decline can impair judgment & impulse control"
+        ]
+      },
+      {
+        id: "suicide-risk",
+        name: "Suicide\nRisk",
+        type: "tertiary-concept",
+        parentId: "risk-vulnerable",
+        angle: 300,
+        distance: 110,
+        connectionType: "thin-connection",
+        description: "One of the highest rates of suicidal ideation and attempts among addictive disorders",
+        facts: [
+          "~1 in 2 contemplate suicide; ~1 in 5 attempt",
+          "Financial crisis + comorbid SUD or depression escalate risk",
+          "Often unrecognized or under-reported in cause-of-death stats",
+          "Immediate screening if suicidal ideation suspected"
+        ]
+      },
+      {
+        id: "personal-case",
+        name: "Personal\nCase Study",
+        type: "tertiary-concept",
+        parentId: "intro-overview",
+        angle: 340,
+        distance: 110,
+        connectionType: "thin-connection",
+        description: "Presenter’s own experience highlights how anyone can fall prey to online gambling",
+        facts: [
+          "A 41-year-old physician accumulated large debts within a year",
+          "Kept gambling despite ‘quit dates’ due to bonuses & promotions",
+          "House placed on market due to mounting financial crisis",
+          "Stigma & secrecy often delay help-seeking; real need for open screening"
+        ]
+      },
+      {
+        id: "advocacy",
+        name: "Public Health\nApproach",
+        type: "tertiary-concept",
+        parentId: "public-health",
+        angle: 20,
+        distance: 110,
+        connectionType: "thin-connection",
+        description: "Comparison with Big Tobacco & opioid crises signals need for stricter regulation",
+        facts: [
+          "States benefit from gambling taxes, creating conflict of interest",
+          "Operators push unregulated marketing & product design",
+          "Physicians urged to screen routinely & advocate for consumer protections",
+          "Focus on harm reduction, research funding, & policy change"
+        ]
+      }
+    ];
+
+    // ===================================
+    // REUSABLE FUNCTIONS & MAP CREATION
+    // ===================================
+
+    // Main function to initialize the concept map
+    function initializeConceptMap() {
+      const container = document.getElementById('concept-map-container');
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+
+      // Create center concept
+      createConcept(centerConcept, centerX, centerY);
+
+      // Create primary concepts
+      primaryConcepts.forEach(concept => {
+        const angleRad = concept.angle * (Math.PI / 180);
+        const x = centerX + Math.cos(angleRad) * concept.distance;
+        const y = centerY + Math.sin(angleRad) * concept.distance;
+
+        createConcept(concept, x, y);
+        createConnection(centerX, centerY, x, y, concept.connectionType, concept.angle);
+      });
+
+      // Create secondary concepts
+      secondaryConcepts.forEach(concept => {
+        const parent = primaryConcepts.find(p => p.id === concept.parentId);
+        if (parent) {
+          const parentAngleRad = parent.angle * (Math.PI / 180);
+          const parentX = centerX + Math.cos(parentAngleRad) * parent.distance;
+          const parentY = centerY + Math.sin(parentAngleRad) * parent.distance;
+
+          const angleRad = concept.angle * (Math.PI / 180);
+          const x = parentX + Math.cos(angleRad) * concept.distance;
+          const y = parentY + Math.sin(angleRad) * concept.distance;
+
+          createConcept(concept, x, y);
+          createConnection(parentX, parentY, x, y, concept.connectionType, concept.angle);
+        }
+      });
+
+      // Create tertiary concepts
+      tertiaryConcepts.forEach(concept => {
+        const parent = secondaryConcepts.find(p => p.id === concept.parentId);
+        if (parent) {
+          const grandParent = primaryConcepts.find(p => p.id === parent.parentId);
+          if (grandParent) {
+            const grandParentAngleRad = grandParent.angle * (Math.PI / 180);
+            const grandParentX = centerX + Math.cos(grandParentAngleRad) * grandParent.distance;
+            const grandParentY = centerY + Math.sin(grandParentAngleRad) * grandParent.distance;
+
+            const parentAngleRad = parent.angle * (Math.PI / 180);
+            const parentX = grandParentX + Math.cos(parentAngleRad) * parent.distance;
+            const parentY = grandParentY + Math.sin(parentAngleRad) * parent.distance;
+
+            const angleRad = concept.angle * (Math.PI / 180);
+            const x = parentX + Math.cos(angleRad) * concept.distance;
+            const y = parentY + Math.sin(angleRad) * concept.distance;
+
+            createConcept(concept, x, y);
+            createConnection(parentX, parentY, x, y, concept.connectionType, concept.angle);
+          }
+        }
+      });
+    }
+
+    // Function to create a concept node
+    function createConcept(concept, x, y) {
+      const conceptElement = document.createElement('div');
+      conceptElement.className = `concept ${concept.type}`;
+      conceptElement.id = concept.id;
+      conceptElement.textContent = concept.name;
+      conceptElement.style.left = `${x - (conceptElement.offsetWidth || 120) / 2}px`;
+      conceptElement.style.top = `${y - (conceptElement.offsetHeight || 120) / 2}px`;
+
+      // Add event listeners
+      conceptElement.addEventListener('mouseover', (e) => {
+        e.stopPropagation(); // Prevent drag while interacting with nodes
+        showTooltip(concept, e);
+      });
+      conceptElement.addEventListener('mouseout', hideTooltip);
+      conceptElement.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent drag while clicking nodes
+        showDetails(concept);
+      });
+
+      // Add touch event handlers
+      conceptElement.addEventListener('touchstart', (e) => {
+        e.stopPropagation();
+      });
+      conceptElement.addEventListener('touchend', (e) => {
+        e.stopPropagation();
+        showDetails(concept);
+        hideTooltip();
+      });
+
+      document.getElementById('concept-map-container').appendChild(conceptElement);
+
+      // Update position after appending to account for actual size
+      setTimeout(() => {
+        conceptElement.style.left = `${x - conceptElement.offsetWidth / 2}px`;
+        conceptElement.style.top = `${y - conceptElement.offsetHeight / 2}px`;
+      }, 0);
+
+      return conceptElement;
+    }
+
+    // Function to create connection lines between concepts
+    function createConnection(x1, y1, x2, y2, type, angle) {
+      const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+      const angleRad = Math.atan2(y2 - y1, x2 - x1);
+
+      const connection = document.createElement('div');
+      connection.className = `connection ${type}`;
+      connection.style.width = `${length}px`;
+      connection.style.left = `${x1}px`;
+      connection.style.top = `${y1}px`;
+      connection.style.transform = `rotate(${angleRad}rad)`;
+
+      document.getElementById('concept-map-container').appendChild(connection);
+    }
+
+    // Function to show tooltip on hover
+    function showTooltip(concept, event) {
+      const tooltip = document.getElementById('tooltip');
+      tooltip.textContent = concept.description;
+      tooltip.style.left = `${event.pageX + 15}px`;
+      tooltip.style.top = `${event.pageY + 15}px`;
+      tooltip.style.display = 'block';
+    }
+
+    // Function to hide tooltip
+    function hideTooltip() {
+      document.getElementById('tooltip').style.display = 'none';
+    }
+
+    // Function to show concept details in side panel
+    function showDetails(concept) {
+      const detailPanel = document.getElementById('detail-panel');
+      const detailTitle = document.getElementById('detail-title');
+      const detailContent = document.getElementById('detail-content');
+
+      detailTitle.textContent = concept.name;
+
+      // Create content with description and facts
+      let content = `<p>${concept.description}</p>`;
+
+      // Add facts
+      if (concept.facts && concept.facts.length > 0) {
+        content += `<h2>Key Facts</h2><div class="fact-list">`;
+        concept.facts.forEach(fact => {
+          content += `<div class="fact-item">• ${fact}</div>`;
+        });
+        content += `</div>`;
+      }
+
+      // Add relationships if they exist
+      if (concept.relationships && concept.relationships.length > 0) {
+        content += `<h2>Relationships</h2><div class="relationship-list">`;
+        concept.relationships.forEach(rel => {
+          const allConcepts = [...primaryConcepts, ...secondaryConcepts, ...tertiaryConcepts, centerConcept];
+          const relatedConcept = allConcepts.find(c => c.id === rel.to);
+          if (relatedConcept) {
+            let color;
+            switch (relatedConcept.type) {
+              case "primary-concept":
+                color = "#3f51b5";
+                break;
+              case "secondary-concept":
+                color = "#03a9f4";
+                break;
+              case "tertiary-concept":
+                color = "#4caf50";
+                break;
+              default:
+                color = "#9c27b0";
+                break;
+            }
+            content += `
+              <div class="relationship-item">
+                <div class="relationship-dot" style="background-color: ${color}"></div>
+                <span><b>${relatedConcept.name}</b>: ${rel.description}</span>
+              </div>`;
+          }
+        });
+        content += `</div>`;
+      }
+
+      detailContent.innerHTML = content;
+      detailPanel.style.display = 'block';
+    }
+
+    // Close detail panel
+    document.getElementById('detail-close').addEventListener('click', () => {
+      document.getElementById('detail-panel').style.display = 'none';
+    });
+
+    // ===================================
+    // DRAG / PAN FUNCTIONALITY
+    // ===================================
+    let isDragging = false;
+    let startX, startY;
+    let offsetX = 0, offsetY = 0;
+    let currentX = 0, currentY = 0;
+
+    function handleDragStart(e) {
+      // Don't drag if clicking on a concept node
+      if (e.target.classList.contains('concept')) return;
+
+      isDragging = true;
+
+      if (e.type === 'mousedown') {
+        startX = e.clientX;
+        startY = e.clientY;
+        e.preventDefault();
+      } else if (e.type === 'touchstart') {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+      }
+
+      document.getElementById('concept-map-container').style.cursor = 'grabbing';
+    }
+
+    function handleDrag(e) {
+      if (!isDragging) return;
+
+      let currentClientX, currentClientY;
+
+      if (e.type === 'mousemove') {
+        currentClientX = e.clientX;
+        currentClientY = e.clientY;
+        e.preventDefault();
+      } else if (e.type === 'touchmove') {
+        currentClientX = e.touches[0].clientX;
+        currentClientY = e.touches[0].clientY;
+        e.preventDefault();
+      }
+
+      const deltaX = currentClientX - startX;
+      const deltaY = currentClientY - startY;
+
+      currentX = offsetX + deltaX;
+      currentY = offsetY + deltaY;
+
+      const container = document.getElementById('concept-map-container');
+      container.style.transform = `translate(${currentX}px, ${currentY}px)`;
+    }
+
+    function handleDragEnd() {
+      if (!isDragging) return;
+
+      isDragging = false;
+      offsetX = currentX;
+      offsetY = currentY;
+      document.getElementById('concept-map-container').style.cursor = 'move';
+    }
+
+    // Initialize the concept map when the page loads
+    window.addEventListener('load', () => {
+      initializeConceptMap();
+
+      const container = document.getElementById('concept-map-container');
+      container.addEventListener('mousedown', handleDragStart);
+      window.addEventListener('mousemove', handleDrag);
+      window.addEventListener('mouseup', handleDragEnd);
+
+      container.addEventListener('touchstart', handleDragStart, { passive: false });
+      window.addEventListener('touchmove', handleDrag, { passive: false });
+      window.addEventListener('touchend', handleDragEnd);
+    });
+
+    // Handle window resize (rebuild map)
+    window.addEventListener('resize', () => {
+      offsetX = 0;
+      offsetY = 0;
+      currentX = 0;
+      currentY = 0;
+      document.getElementById('concept-map-container').innerHTML = '';
+      document.getElementById('concept-map-container').style.transform = '';
+      initializeConceptMap();
+    });
+  </script>
+</body>
+</html>

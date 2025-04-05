@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blackjack House Edge Simulator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .controls {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        #gameArea {
+            margin-top: 20px;
+        }
+        #chart {
+            width: 100%;
+            height: 300px;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .stat-box {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .hand {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            min-height: 92px; /* Ensure space even when empty */
+            align-items: center; /* Align cards vertically */
+        }
+        .card {
+            width: 60px;
+            height: 90px;
+            background-color: white;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            flex-shrink: 0; /* Prevent cards from shrinking */
+        }
+        .red {
+            color: #d40000;
+        }
+        .black {
+            color: #000;
+        }
+        button {
+            padding: 8px 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+            margin-bottom: 5px; /* Add some space between buttons if they wrap */
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        h1 {
+            color: #2E4053;
+        }
+        .explanation {
+            background-color: #f4f6f7;
+            padding: 15px;
+            border-left: 4px solid #3498db;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Blackjack House Edge Simulator</h1>
+
+        <div class="explanation">
+            <h3>Understanding House Edge in Blackjack</h3>
+            <p>This simulator demonstrates how the casino maintains a mathematical advantage over time in blackjack. Even with optimal play, the house edge is approximately 0.5-1%, which ensures that over thousands of hands, the casino will profit.</p>
+        </div>
+
+        <div class="controls">
+            <h3>Simulation Controls</h3>
+            <div>
+                <!-- Changed "Play One Hand" to "Simulate 20 Hands" -->
+                <button id="simulate20">Simulate 20 Hands</button>
+                <button id="simulate100">Simulate 100 Hands</button>
+                <button id="simulate1000">Simulate 1000 Hands</button>
+                <button id="reset">Reset Simulation</button>
+            </div>
+            <div style="margin-top: 10px;">
+                <label for="strategy">Playing Strategy:</label>
+                <select id="strategy">
+                    <option value="basic">Basic Strategy (Optimal)</option>
+                    <option value="conservative">Conservative (Stand on 15+)</option>
+                    <option value="aggressive">Aggressive (Always Hit until 17+)</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="gameArea">
+            <h3>Last Played Hand</h3> <!-- Changed from "Current Hand" as it shows the result of the last simulation step -->
+            <div>
+                <h4>Dealer's Hand: <span id="dealerScore">0</span></h4>
+                <div id="dealerHand" class="hand"></div>
+
+                <h4>Player's Hand: <span id="playerScore">0</span></h4>
+                <div id="playerHand" class="hand"></div>
+
+                <div id="result" style="margin-top: 10px; font-weight: bold;"></div>
+            </div>
+        </div>
+
+        <div>
+            <h3>Simulation Results</h3>
+            <canvas id="chart"></canvas>
+
+            <div class="stats">
+                <div class="stat-box">
+                    <h4>Hands Played: <span id="handsPlayed">0</span></h4>
+                    <p>Wins: <span id="playerWins">0</span></p>
+                    <p>Losses: <span id="playerLosses">0</span></p>
+                    <p>Pushes: <span id="pushes">0</span></p>
+                    <p>Blackjacks: <span id="blackjacks">0</span></p>
+                </div>
+                <div class="stat-box">
+                    <h4>Mathematical Analysis</h4>
+                    <p>Win Rate: <span id="winRate">0</span>%</p>
+                    <p>House Edge (Assumed): <span id="houseEdge">-</span>%</p>
+                    <p>Expected Loss: $<span id="expectedLoss">0</span></p>
+                    <p>Actual Net: $<span id="actualNet">0</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="explanation">
+            <h3>The Math Behind the Game</h3>
+            <p>With perfect basic strategy, the house edge in blackjack is about 0.5%. This means for every $100 bet, the player will lose $0.50 on average over time.</p>
+            <p>While short-term variance (luck) can lead to winning sessions, the mathematical edge ensures that as the number of hands increases, results will trend toward the expected loss determined by the house edge.</p>
+            <p>This demonstrates why gambling is not a viable way to make money - the math is designed to work against the player.</p>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script>
+        // Card deck setup
+        const suits = ['♥', '♦', '♣', '♠'];
+        const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+        let deck = [];
+        let playerHand = [];
+        let dealerHand = [];
+
+        // Game stats
+        let stats = {
+            handsPlayed: 0,
+            playerWins: 0,
+            playerLosses: 0,
+            pushes: 0,
+            blackjacks: 0,
+            bankroll: 1000,
+            betSize: 10
+        };
+
+        // Bankroll tracking for chart
+        let bankrollHistory = [1000];
+        let expectedBankrollHistory = [1000];
+
+        // Initialize chart
+        const ctx = document.getElementById('chart').getContext('2d');
+        const bankrollChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['0'],
+                datasets: [
+                    {
+                        label: 'Actual Bankroll',
+                        data: bankrollHistory,
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 2,
+                        tension: 0.1
+                    },
+                    {
+                        label: 'Expected Bankroll (Based on Assumed House Edge)',
+                        data: expectedBankrollHistory,
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 2,
+                        tension: 0.1,
+                        borderDash: [5, 5]
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        title: {
+                            display: true,
+                            text: 'Bankroll ($)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Hands Played'
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.dataset.label}: $${context.raw.toFixed(2)}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Initialize game
+        function initGame() {
+            createDeck();
+            shuffleDeck();
+            updateStats();
+            // Clear initial display area
+            document.getElementById('dealerHand').innerHTML = '';
+            document.getElementById('playerHand').innerHTML = '';
+            document.getElementById('dealerScore').textContent = '0';
+            document.getElementById('playerScore').textContent = '0';
+            document.getElementById('result').textContent = 'Click a simulation button to start.';
+        }
+
+        // Create a new deck of cards
+        function createDeck() {
+            deck = [];
+            for (let suit of suits) {
+                for (let value of values) {
+                    deck.push({ suit, value });
+                }
+            }
+             // Basic single deck assumption - could be expanded for multi-deck
+        }
+
+        // Shuffle the deck using Fisher-Yates algorithm
+        function shuffleDeck() {
+            for (let i = deck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [deck[i], deck[j]] = [deck[j], deck[i]];
+            }
+        }
+
+        // Draw a card from the deck
+        function drawCard() {
+            // Reshuffle if deck gets low (e.g., less than 1/4 remaining)
+            // Adjust threshold as needed for simulation accuracy/style
+            if (deck.length < 15) {
+                createDeck();
+                shuffleDeck();
+                // console.log("--- Reshuffling Deck ---");
+            }
+            return deck.pop();
+        }
+
+        // Calculate the hand value
+        function calculateHandValue(hand) {
+            let value = 0;
+            let aces = 0;
+
+            for (let card of hand) {
+                if (!card) continue; // Safety check if hand array has gaps (shouldn't happen)
+                if (card.value === 'A') {
+                    aces++;
+                    value += 11;
+                } else if (['K', 'Q', 'J'].includes(card.value)) {
+                    value += 10;
+                } else {
+                    value += parseInt(card.value);
+                }
+            }
+
+            // Adjust aces if needed
+            while (value > 21 && aces > 0) {
+                value -= 10;
+                aces--;
+            }
+
+            return value;
+        }
+
+        // Determine if a hand is a blackjack
+        function isBlackjack(hand) {
+            return hand.length === 2 && calculateHandValue(hand) === 21;
+        }
+
+        // Deal a new hand - called by simulation loop
+        function dealHand() {
+            playerHand = [drawCard(), drawCard()];
+            dealerHand = [drawCard(), drawCard()];
+            // No rendering here initially, rendering happens after the hand finishes
+        }
+
+        // Render the final hands on the screen after a hand is played
+        function renderHands(isInitialDeal = false) {
+            const dealerHandEl = document.getElementById('dealerHand');
+            const playerHandEl = document.getElementById('playerHand');
+
+            dealerHandEl.innerHTML = '';
+            playerHandEl.innerHTML = '';
+
+            // Render dealer's hand (reveal hole card now)
+            dealerHand.forEach(card => {
+                 if (!card) return; // Safety check
+                const cardEl = document.createElement('div');
+                cardEl.className = 'card';
+                cardEl.textContent = `${card.value}${card.suit}`;
+                cardEl.className += card.suit === '♥' || card.suit === '♦' ? ' red' : ' black';
+                dealerHandEl.appendChild(cardEl);
+            });
+
+            // Render player's hand
+            playerHand.forEach(card => {
+                 if (!card) return; // Safety check
+                const cardEl = document.createElement('div');
+                cardEl.className = 'card';
+                cardEl.textContent = `${card.value}${card.suit}`;
+                cardEl.className += card.suit === '♥' || card.suit === '♦' ? ' red' : ' black';
+                playerHandEl.appendChild(cardEl);
+            });
+
+            // Update final scores
+            document.getElementById('dealerScore').textContent = calculateHandValue(dealerHand);
+            document.getElementById('playerScore').textContent = calculateHandValue(playerHand);
+        }
+
+        // Basic strategy decision (simplified version)
+        function makeBasicStrategyDecision() {
+            const playerValue = calculateHandValue(playerHand);
+            const dealerUpcard = dealerHand[0].value; // Only use the first card shown
+            let dealerValue = 0;
+
+            if (['K', 'Q', 'J', '10'].includes(dealerUpcard)) {
+                dealerValue = 10;
+            } else if (dealerUpcard === 'A') {
+                dealerValue = 11;
+            } else {
+                dealerValue = parseInt(dealerUpcard);
+            }
+
+            // Simplified Basic Strategy Logic (doesn't handle pairs or complex soft hands)
+            const hasAce = playerHand.some(card => card.value === 'A');
+            const isSoft = hasAce && (playerValue - 11 < 11); // A crude check for soft hand
+
+            if (isSoft) {
+                if (playerValue >= 19) return 'stand';
+                if (playerValue === 18) return (dealerValue === 2 || dealerValue === 7 || dealerValue === 8) ? 'stand' : 'hit'; // Simplified soft 18
+                if (playerValue <= 17) return 'hit'; // Simplified soft 13-17
+            } else { // Hard hands
+                if (playerValue >= 17) return 'stand';
+                if (playerValue >= 13 && playerValue <= 16) return (dealerValue >= 2 && dealerValue <= 6) ? 'stand' : 'hit';
+                if (playerValue === 12) return (dealerValue >= 4 && dealerValue <= 6) ? 'stand' : 'hit';
+                if (playerValue <= 11) return 'hit'; // Includes simplified double down logic as just hitting
+            }
+            return 'hit'; // Default fallback
+        }
+
+
+        // Custom strategy based on selection
+        function makeStrategyDecision() {
+            const playerValue = calculateHandValue(playerHand);
+            const strategy = document.getElementById('strategy').value;
+
+            if (strategy === 'basic') {
+                // Basic strategy doesn't hit on 21
+                if (playerValue === 21) return 'stand';
+                return makeBasicStrategyDecision();
+            } else if (strategy === 'conservative') {
+                return playerValue >= 15 ? 'stand' : 'hit';
+            } else if (strategy === 'aggressive') {
+                return playerValue >= 17 ? 'stand' : 'hit';
+            }
+            return 'hit'; // Failsafe
+        }
+
+        // Play dealer's turn
+        function playDealerTurn() {
+             // Dealer hits on soft 17 (common rule) - Adjust if needed
+            while (calculateHandValue(dealerHand) < 17 || (calculateHandValue(dealerHand) === 17 && dealerHand.some(c => c.value === 'A') && calculateHandValue(dealerHand) - 11 < 7)) {
+                 if(calculateHandValue(dealerHand) >= 21) break; // Stop if busted or 21
+                dealerHand.push(drawCard());
+            }
+        }
+
+        // Finish the hand and determine outcome (called within simulation loop)
+        function finishHand() {
+            // Player's turn based on strategy
+            while (calculateHandValue(playerHand) < 21) {
+                const decision = makeStrategyDecision();
+                 // console.log(`Player has ${calculateHandValue(playerHand)}, Dealer shows ${dealerHand[0].value}, Decision: ${decision}`);
+                if (decision === 'stand') {
+                    break;
+                } else if (decision === 'hit') { // Includes simplified double down for now
+                    playerHand.push(drawCard());
+                }
+                // Add more complex logic here for real double/split if needed
+            }
+
+            const playerValue = calculateHandValue(playerHand);
+            let resultText = '';
+            let resultColor = '#000'; // Default color
+
+            // Player busts
+            if (playerValue > 21) {
+                stats.playerLosses++;
+                stats.bankroll -= stats.betSize;
+                resultText = 'Bust! You lose.';
+                resultColor = '#d9534f';
+            } else {
+                // Play dealer's turn only if player hasn't busted
+                playDealerTurn();
+                const dealerValue = calculateHandValue(dealerHand);
+
+                // Determine winner
+                const playerHasBJ = isBlackjack(playerHand);
+                const dealerHasBJ = isBlackjack(dealerHand);
+
+                if (playerHasBJ && !dealerHasBJ) {
+                    stats.playerWins++;
+                    stats.blackjacks++;
+                    stats.bankroll += stats.betSize * 1.5; // Blackjack pays 3:2
+                    resultText = 'Blackjack! You win 1.5x!';
+                    resultColor = '#5cb85c';
+                } else if (!playerHasBJ && dealerHasBJ) {
+                    stats.playerLosses++;
+                    stats.bankroll -= stats.betSize;
+                    resultText = 'Dealer has Blackjack. You lose.';
+                    resultColor = '#d9534f';
+                } else if (playerHasBJ && dealerHasBJ) {
+                    stats.pushes++;
+                    stats.blackjacks++; // Count player BJ even in push
+                    resultText = 'Both have Blackjack. Push!';
+                    resultColor = '#f0ad4e';
+                } else if (dealerValue > 21) {
+                    stats.playerWins++;
+                    stats.bankroll += stats.betSize;
+                    resultText = 'Dealer busts! You win!';
+                    resultColor = '#5cb85c';
+                } else if (playerValue > dealerValue) {
+                    stats.playerWins++;
+                    stats.bankroll += stats.betSize;
+                    resultText = 'You win!';
+                    resultColor = '#5cb85c';
+                } else if (playerValue < dealerValue) {
+                    stats.playerLosses++;
+                    stats.bankroll -= stats.betSize;
+                    resultText = 'Dealer wins.';
+                    resultColor = '#d9534f';
+                } else { // playerValue === dealerValue
+                    stats.pushes++;
+                    resultText = 'Push!';
+                    resultColor = '#f0ad4e';
+                }
+            }
+
+            // Update stats *after* determining outcome
+            stats.handsPlayed++;
+            updateStats(); // Update numerical stats display
+
+            // Update chart data
+            bankrollHistory.push(stats.bankroll);
+            const currentHouseEdge = getAssumedHouseEdge(); // Use assumed edge for expected line
+            expectedBankrollHistory.push(1000 - (stats.handsPlayed * stats.betSize * (currentHouseEdge / 100)));
+
+            // Only update the chart data arrays, full update happens after loop
+            bankrollChart.data.labels.push(stats.handsPlayed.toString());
+
+             // Display the final state of this hand
+            renderHands(); // Show final cards
+            document.getElementById('result').textContent = resultText;
+            document.getElementById('result').style.color = resultColor;
+        }
+
+
+        // Get the assumed house edge based on the selected strategy
+        function getAssumedHouseEdge() {
+            const strategy = document.getElementById('strategy').value;
+            if (strategy === 'basic') return 0.5; // Approximate edge with perfect basic strategy
+            if (strategy === 'conservative') return 2.5; // Estimated edge for standing early often
+            if (strategy === 'aggressive') return 4.0; // Estimated edge for hitting aggressively
+            return 1.0; // Default fallback
+        }
+
+        // Update stats display
+        function updateStats() {
+            document.getElementById('handsPlayed').textContent = stats.handsPlayed;
+            document.getElementById('playerWins').textContent = stats.playerWins;
+            document.getElementById('playerLosses').textContent = stats.playerLosses;
+            document.getElementById('pushes').textContent = stats.pushes;
+            document.getElementById('blackjacks').textContent = stats.blackjacks;
+
+            const winRate = stats.handsPlayed > 0 ? (stats.playerWins / (stats.handsPlayed - stats.pushes) * 100).toFixed(2) : '0.00'; // Win rate excluding pushes
+            document.getElementById('winRate').textContent = (stats.handsPlayed - stats.pushes) > 0 ? winRate : 'N/A';
+
+
+            const assumedHouseEdge = getAssumedHouseEdge();
+            document.getElementById('houseEdge').textContent = assumedHouseEdge.toFixed(2);
+
+            const expectedLoss = stats.handsPlayed * stats.betSize * (assumedHouseEdge / 100);
+            document.getElementById('expectedLoss').textContent = expectedLoss.toFixed(2);
+
+            const actualNet = stats.bankroll - 1000;
+            document.getElementById('actualNet').textContent = actualNet.toFixed(2);
+            document.getElementById('actualNet').style.color = actualNet >= 0 ? 'green' : 'red';
+        }
+
+        // Reset the simulation
+        function resetSimulation() {
+            stats = {
+                handsPlayed: 0,
+                playerWins: 0,
+                playerLosses: 0,
+                pushes: 0,
+                blackjacks: 0,
+                bankroll: 1000,
+                betSize: 10
+            };
+
+            bankrollHistory = [1000];
+            expectedBankrollHistory = [1000];
+
+            // Reset chart
+            bankrollChart.data.labels = ['0'];
+            bankrollChart.data.datasets[0].data = bankrollHistory;
+            bankrollChart.data.datasets[1].data = expectedBankrollHistory;
+            bankrollChart.update();
+
+            // Clear hands display and result
+            document.getElementById('dealerHand').innerHTML = '';
+            document.getElementById('playerHand').innerHTML = '';
+            document.getElementById('dealerScore').textContent = '0';
+            document.getElementById('playerScore').textContent = '0';
+            document.getElementById('result').textContent = 'Simulation Reset. Click a button to start.';
+            document.getElementById('result').style.color = '#000';
+
+
+            updateStats();
+            createDeck(); // Create a fresh deck
+            shuffleDeck();
+        }
+
+        // Simulate multiple hands
+        function simulateHands(numHands) {
+             // Disable buttons during simulation to prevent overlap
+            document.querySelectorAll('.controls button').forEach(button => button.disabled = true);
+
+            let i = 0;
+            function runStep() {
+                if (i < numHands) {
+                    dealHand();
+                    finishHand(); // This now handles playing, outcome, stats, and rendering the last hand
+                    i++;
+                    // Use setTimeout for a small delay allowing UI updates between hands if needed, 0 for max speed
+                    setTimeout(runStep, 0);
+                } else {
+                    // Simulation finished, update chart fully and re-enable buttons
+                    bankrollChart.data.datasets[0].data = bankrollHistory; // Ensure final data is set
+                    bankrollChart.data.datasets[1].data = expectedBankrollHistory;
+                    bankrollChart.update();
+                     document.querySelectorAll('.controls button').forEach(button => button.disabled = false);
+                     console.log(`Finished simulating ${numHands} hands.`);
+                }
+            }
+            runStep(); // Start the simulation steps
+        }
+
+        // Event listeners
+        // Removed listener for playHand
+
+        // Added listener for simulate20
+        document.getElementById('simulate20').addEventListener('click', () => {
+            simulateHands(20);
+        });
+
+        document.getElementById('simulate100').addEventListener('click', () => {
+            simulateHands(100);
+        });
+
+        document.getElementById('simulate1000').addEventListener('click', () => {
+            simulateHands(1000);
+        });
+
+        document.getElementById('reset').addEventListener('click', resetSimulation);
+
+        // Strategy change updates expected outcome line immediately
+        document.getElementById('strategy').addEventListener('change', () => {
+            const assumedHouseEdge = getAssumedHouseEdge();
+            document.getElementById('houseEdge').textContent = assumedHouseEdge.toFixed(2);
+
+            // Recalculate the entire expected bankroll history based on the new edge
+            expectedBankrollHistory = [1000];
+            for (let i = 1; i <= stats.handsPlayed; i++) {
+                expectedBankrollHistory.push(1000 - (i * stats.betSize * (assumedHouseEdge / 100)));
+            }
+
+            bankrollChart.data.datasets[1].data = expectedBankrollHistory;
+            bankrollChart.update();
+
+            // Update the expected loss display
+            const expectedLoss = stats.handsPlayed * stats.betSize * (assumedHouseEdge / 100);
+            document.getElementById('expectedLoss').textContent = expectedLoss.toFixed(2);
+        });
+
+        // Initialize the game on page load
+        initGame();
+    </script>
+</body>
+</html>
