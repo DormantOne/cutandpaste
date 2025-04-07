@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IBD Research Prompts</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: left;
+            padding: 20px;
+            font-size: 16px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        h2 {
+            font-size: 20px;
+            margin-top: 30px;
+            margin-bottom: 10px;
+        }
+        p {
+            margin-bottom: 10px;
+        }
+        .copyButton {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            margin-bottom: 15px;
+        }
+        .copyButton:hover {
+            background-color: #45a049;
+        }
+        .copyButton.copied {
+            background-color: #388E3C;
+        }
+        .promptContainer {
+            margin-top: 15px;
+            margin-bottom: 30px;
+        }
+        .promptText {
+            font-size: 12px;
+            color: #555;
+            padding: 10px;
+            background-color: #eef;
+            border: 1px solid #ccd;
+            border-radius: 5px 5px 0 0;
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+            max-height: 25px;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        .promptText.expanded {
+            max-height: 1000px;
+        }
+        .expandPrompt {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 5px;
+            cursor: pointer;
+            background-color: #e8e8ee;
+            border-radius: 0 0 5px 5px;
+            border-top: 1px dashed #ccd;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        ul li {
+            margin-bottom: 8px;
+        }
+        ul li a {
+            color: #1a0dab;
+            text-decoration: none;
+        }
+        ul li a:hover {
+            text-decoration: underline;
+        }
+        #clearCacheButton {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+        #clearCacheButton:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <h1>IBD Research Prompts</h1>
+    <p>Copy and paste these prompts into any AI chatbot for in-depth analysis:</p>
+
+    <h2>Crohn's Disease Treatment Analysis Deep Dive</h2>
+    <button id="copyButton1" class="copyButton" aria-label="Copy IBD Research Prompt to Clipboard">Copy IBD Research Prompt to Clipboard</button>
+
+    <div class="promptContainer">
+        <div id="promptText1" class="promptText">
+Please analyze the paper titled **'Early Ileocecal Resection for Crohn's Disease Is Associated With Improved Long-term Outcomes Compared With Anti-Tumor Necrosis Factor Therapy: A Population-Based Cohort Study'** by **Manasi Agrawal** et al., published in **Gastroenterology** in **October 2023**. The study's findings suggest that early ileocecal resection (ICR) is associated with improved long-term outcomes compared to primary anti-tumor necrosis factor (anti-TNF) therapy for ileal or ileocecal Crohn's disease (CD), with a notable proportion of patients in the ICR group requiring no treatment at 5 years of follow-up.
+
+Considering these results and the discussion within the paper, what are the **potential underlying mechanisms and pathophysiological reasons** that might explain why early ICR could lead to these improved long-term outcomes in comparison to primary anti-TNF therapy in this patient population? Specifically, explore how the **removal of the ileocecal region** in early disease might impact the long-term disease course and the need for subsequent medical interventions as observed in this study.
+        </div>
+        <div class="expandPrompt" id="expand1">Click to expand/collapse...</div>
+    </div>
+
+    <h2>Use with your favorite AI chatbot:</h2>
+    <ul>
+        <li><a href="https://www.bing.com/chat" target="_blank">Microsoft Copilot</a></li>
+        <li><a href="https://chat.openai.com/" target="_blank">ChatGPT by OpenAI</a></li>
+        <li><a href="https://claude.ai/" target="_blank">Claude by Anthropic</a></li>
+        <li><a href="https://gemini.google.com/" target="_blank">Gemini</a></li>
+        <li><a href="https://www.perplexity.ai/" target="_blank">Perplexity AI</a></li>
+        <li><a href="https://www.openevidence.com/" target="_blank">Open Evidence</a></li>
+        <li><a href="https://chat.deepseek.com/" target="_blank">DeepSeek</a></li>
+    </ul>
+
+    <button id="clearCacheButton">Clear Cache / Memory</button>
+
+    <script>
+        const ibdResearchPrompt = document.getElementById('promptText1').textContent.trim();
+
+        function copyToClipboard(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                return navigator.clipboard.writeText(text);
+            } else {
+                return new Promise((resolve, reject) => {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = text;
+                    textArea.style.position = "fixed";
+                    textArea.style.top = "0";
+                    textArea.style.left = "0";
+                    textArea.style.width = "2em";
+                    textArea.style.height = "2em";
+                    textArea.style.padding = "0";
+                    textArea.style.border = "none";
+                    textArea.style.outline = "none";
+                    textArea.style.boxShadow = "none";
+                    textArea.style.background = "transparent";
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        resolve();
+                    } catch (err) {
+                        document.body.removeChild(textArea);
+                        reject(err);
+                    }
+                });
+            }
+        }
+
+        document.getElementById('copyButton1').addEventListener('click', () => {
+            copyToClipboard(ibdResearchPrompt).then(() => {
+                const copyBtn = document.getElementById('copyButton1');
+                copyBtn.innerText = "Copied!";
+                copyBtn.classList.add('copied');
+                setTimeout(() => {
+                    copyBtn.innerText = "Copy IBD Research Prompt to Clipboard";
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+            });
+        });
+
+        // Toggle expand/collapse for prompt texts
+        document.getElementById('promptText1').addEventListener('click', () => {
+            document.getElementById('promptText1').classList.toggle('expanded');
+        });
+        
+        document.getElementById('expand1').addEventListener('click', () => {
+            document.getElementById('promptText1').classList.toggle('expanded');
+        });
+
+        document.getElementById('clearCacheButton').addEventListener('click', () => {
+            localStorage.clear();
+            const clearBtn = document.getElementById('clearCacheButton');
+            clearBtn.innerText = "Cleared!";
+            clearBtn.disabled = true;
+            setTimeout(() => {
+                clearBtn.innerText = "Clear Cache / Memory";
+                clearBtn.disabled = false;
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
