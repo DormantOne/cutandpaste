@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IBD Care Prompts</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: left;
+            padding: 20px;
+            font-size: 16px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        h2 {
+            font-size: 20px;
+            margin-top: 30px;
+            margin-bottom: 10px;
+        }
+        p {
+            margin-bottom: 10px;
+        }
+        .copyButton {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            margin-bottom: 15px;
+        }
+        .copyButton:hover {
+            background-color: #45a049;
+        }
+        .copyButton.copied {
+            background-color: #388E3C;
+        }
+        .promptText {
+            font-size: 12px;
+            color: #555;
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #eef;
+            border: 1px solid #ccd;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+            margin-bottom: 30px;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        ul li {
+            margin-bottom: 8px;
+        }
+        ul li a {
+            color: #1a0dab;
+            text-decoration: none;
+        }
+        ul li a:hover {
+            text-decoration: underline;
+        }
+        #clearCacheButton {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+        #clearCacheButton:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <h1>IBD Care Prompts</h1>
+    <p>Copy and paste these prompts into any AI chatbot for in-depth analysis:</p>
+
+    <h2>Asymptomatic Crohn's Disease Management for Primary Care</h2>
+    <button id="copyButton1" class="copyButton" aria-label="Copy IBD Prompt to Clipboard">Copy IBD Prompt to Clipboard</button>
+
+    <div id="promptText1" class="promptText">
+I'm researching the phenomenon of asymptomatic Crohn's disease and its implications for primary care. According to gastroenterology specialists, Crohn's disease is often silent until complications like obstruction, perforation, or abscess formation occur. This means patients can have inflammation progressing for 5-15 years without knowing it.
+
+Please analyze the following questions in depth:
+
+1. What are the most reliable early warning signs or subtle indicators that PCPs should watch for in potentially undiagnosed Crohn's patients? Beyond the obvious severe symptoms, what constellation of minor findings (lab values, patient history elements, physical exam findings) should raise suspicion?
+
+2. What would an evidence-based screening protocol look like for high-risk individuals (e.g., those with family history of IBD)? At what intervals should testing be done, and which specific tests would provide the best balance of sensitivity, specificity, cost-effectiveness and patient acceptability?
+
+3. How can we better educate patients about the asymptomatic nature of Crohn's to improve medication adherence? What specific communication strategies or analogies (like the hypertension comparison) are most effective?
+
+4. What role could non-invasive biomarkers like fecal calprotectin play in routine monitoring of at-risk populations? What are the limitations of this approach?
+
+5. For patients identified with early, mild, or asymptomatic Crohn's disease, what intervention strategies show the best evidence for preventing disease progression and complications? Are there treatment approaches that are particularly effective when initiated early versus later in the disease course?
+
+6. How might advanced technologies (AI analysis of symptoms, at-home testing options, etc.) improve early detection of Crohn's disease before complications occur?
+
+Please provide evidence-based answers that would be valuable to primary care physicians looking to improve their detection, early intervention, and management of this challenging condition.
+    </div>
+
+    <h2>Use with your favorite AI chatbot:</h2>
+    <ul>
+        <li><a href="https://www.bing.com/chat" target="_blank">Microsoft Copilot</a></li>
+        <li><a href="https://chat.openai.com/" target="_blank">ChatGPT by OpenAI</a></li>
+        <li><a href="https://claude.ai/" target="_blank">Claude by Anthropic</a></li>
+        <li><a href="https://gemini.google.com/" target="_blank">Gemini</a></li>
+        <li><a href="https://www.perplexity.ai/" target="_blank">Perplexity AI</a></li>
+        <li><a href="https://www.openevidence.com/" target="_blank">Open Evidence</a></li>
+        <li><a href="https://chat.deepseek.com/" target="_blank">DeepSeek</a></li>
+    </ul>
+
+    <button id="clearCacheButton">Clear Cache / Memory</button>
+
+    <script>
+        const ibdPrompt = document.getElementById('promptText1').textContent.trim();
+
+        function copyToClipboard(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                return navigator.clipboard.writeText(text);
+            } else {
+                return new Promise((resolve, reject) => {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = text;
+                    textArea.style.position = "fixed";
+                    textArea.style.top = "0";
+                    textArea.style.left = "0";
+                    textArea.style.width = "2em";
+                    textArea.style.height = "2em";
+                    textArea.style.padding = "0";
+                    textArea.style.border = "none";
+                    textArea.style.outline = "none";
+                    textArea.style.boxShadow = "none";
+                    textArea.style.background = "transparent";
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        resolve();
+                    } catch (err) {
+                        document.body.removeChild(textArea);
+                        reject(err);
+                    }
+                });
+            }
+        }
+
+        document.getElementById('copyButton1').addEventListener('click', () => {
+            copyToClipboard(ibdPrompt).then(() => {
+                const copyBtn = document.getElementById('copyButton1');
+                copyBtn.innerText = "Copied!";
+                copyBtn.classList.add('copied');
+                setTimeout(() => {
+                    copyBtn.innerText = "Copy IBD Prompt to Clipboard";
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+            });
+        });
+
+        document.getElementById('clearCacheButton').addEventListener('click', () => {
+            localStorage.clear();
+            const clearBtn = document.getElementById('clearCacheButton');
+            clearBtn.innerText = "Cleared!";
+            clearBtn.disabled = true;
+            setTimeout(() => {
+                clearBtn.innerText = "Clear Cache / Memory";
+                clearBtn.disabled = false;
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

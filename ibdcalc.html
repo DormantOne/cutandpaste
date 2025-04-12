@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IBD Diagnostic & Treatment Calculator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: #4a3f9f;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            font-style: italic;
+        }
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+        @media (min-width: 768px) {
+            .calculator-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        .form-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .results-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            position: relative;
+        }
+        .form-section {
+            margin-bottom: 25px;
+        }
+        .section-title {
+            color: #4a3f9f;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #e1e4e8;
+        }
+        .form-row {
+            margin-bottom: 15px;
+        }
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        input[type="checkbox"] {
+            margin-right: 8px;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+        }
+        button {
+            background-color: #4a3f9f;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #3c3384;
+        }
+        button.secondary {
+            background-color: #6c757d;
+        }
+        button.secondary:hover {
+            background-color: #5a6268;
+        }
+        .button-group {
+            margin-top: 20px;
+        }
+        .result-card {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+        .result-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        .diagnosis-result {
+            background-color: #e6f7ff;
+            border-left: 4px solid #1890ff;
+        }
+        .diagnosis-result .result-title {
+            color: #1890ff;
+        }
+        .severity-result {
+            background-color: #fff9e6;
+            border-left: 4px solid #faad14;
+        }
+        .severity-result .result-title {
+            color: #faad14;
+        }
+        .treatment-result {
+            background-color: #f6ffed;
+            border-left: 4px solid #52c41a;
+        }
+        .treatment-result .result-title {
+            color: #52c41a;
+        }
+        .score-container {
+            display: flex;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .score-box {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 0 5px;
+        }
+        .crohns-score {
+            background-color: #fdeef5;
+            border: 1px solid #eb2f96;
+        }
+        .uc-score {
+            background-color: #f0f5ff;
+            border: 1px solid #2f54eb;
+        }
+        .score-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .crohns-score .score-value {
+            color: #eb2f96;
+        }
+        .uc-score .score-value {
+            color: #2f54eb;
+        }
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255,255,255,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 8px;
+            display: none;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(74, 63, 159, 0.1);
+            border-radius: 50%;
+            border-top-color: #4a3f9f;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .certainty-meter {
+            width: 100%;
+            height: 20px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            margin: 10px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .meter-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2f54eb 0%, #eb2f96 100%);
+            border-radius: 10px;
+            transition: width 0.5s ease-in-out;
+        }
+        .certainty-label {
+            text-align: center;
+            font-size: 14px;
+            margin-top: 5px;
+            color: #666;
+        }
+        .hidden {
+            display: none;
+        }
+        .info-icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background-color: #4a3f9f;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 16px;
+            font-size: 12px;
+            margin-left: 5px;
+            cursor: help;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>IBD Diagnostic & Treatment Calculator</h1>
+            <p class="subtitle">Based on Dr. Schwartz's Grand Rounds presentation on IBD for PCPs</p>
+        </header>
+
+        <div class="calculator-grid">
+            <!-- Left side - Form inputs -->
+            <div class="form-container">
+                <div class="form-section">
+                    <h2 class="section-title">Demographics</h2>
+                    <div class="form-row">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div>
+                                <label for="age">Age</label>
+                                <input type="number" id="age" name="age">
+                            </div>
+                            <div>
+                                <label for="sex">Sex</label>
+                                <select id="sex" name="sex">
+                                    <option value="">Select...</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="checkbox-label">
+                            <input type="checkbox" id="hasFirstDegreeRelative" name="hasFirstDegreeRelative">
+                            <label for="hasFirstDegreeRelative">First degree relative with IBD</label>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <label for="smoking">Smoking Status</label>
+                        <select id="smoking" name="smoking">
+                            <option value="">Select...</option>
+                            <option value="never">Never Smoker</option>
+                            <option value="former">Former Smoker</option>
+                            <option value="current">Current Smoker</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2 class="section-title">Symptoms</h2>
+                    <div class="form-row">
+                        <div class="checkbox-label">
+                            <input type="checkbox" id="bloodyDiarrhea" name="bloodyDiarrhea">
+                            <label for="bloodyDiarrhea">Bloody Diarrhea</label>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="checkbox-label">
+                            <input type="checkbox" id="tenesmus" name="tenesmus">
+                            <label for="tenesmus">Tenesmus (rectal urgency/cramping)</label>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <label for="abdominalPain">Abdominal Pain</label>
+                        <select id="abdominalPain" name="abdominalPain">
+                            <option value="">Select...</option>
+                            <option value="none">None</option>
+                            <option value="mild">Mild</option>
+                            <option value="moderate">Moderate</option>
+                            <option value="severe">Severe</option>
+                        </select>
+                    </div>
+                    <div class="form-row" id="painLocationContainer" style="display:none;">
+                        <label>Pain Location</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-label">
+                                <input type="checkbox" id="painRLQ" name="painLocation" value="right_lower">
+                                <label for="painRLQ">Right Lower Quadrant</label>
+                            </div>
+                            <div class="checkbox-label">
+                                <input type="checkbox" id="painLLQ" name="painLocation" value="left_lower">
+                                <label for="painLLQ">Left Lower Quadrant</label>
+                            </div>
+                            <div class="checkbox-label">
+                                <input type="checkbox" id="painDiffuse" name="painLocation" value="diffuse">
+                                <label for="painDiffuse">Diffuse/All Over</label>
+                            </div>
+                            <div class="checkbox-label">
+                                <input type="checkbox" id="painPeriumbilical" name="painLocation" value="periumbilical">
+                                <label for="painPeriumbilical">Around Belly Button</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="checkbox-label">
+                            <input type="checkbox" id="weightLoss" name="weightLoss">
+                            <label for="weightLoss">Weight Loss</label>
+                        </div>
+                    </div>
+                    <div class="form-row" id="weightLossAmountContainer" style="display:none;">
+                        <label for="weightLossAmount">Amount (lbs)</label>
+                        <input type="number" id="weightLossAmount" name="weightLossAmount">
+                    </div>
+                    <div class="form-row">
+                        <div class="checkbox-label">
+                            <input type="checkbox" id="feverPresent" name="feverPresent">
+                            <label for="feverPresent">Fever Present</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2 class="section-title">Laboratory Values</h2>
+                    <div class="form-row">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div>
+                                <label for="hemoglobin">Hemoglobin (g/dL)</label>
+                                <input type="number" id="hemoglobin" name="hemoglobin" step="0.1">
+                            </div>
+                            <div>
+                                <label for="crp">CRP (mg/L)</label>
+                                <input type="number" id="crp" name="crp" step="0.1">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div>
+                                <label for="albumin">Albumin (g/dL)</label>
+                                <input type="number" id="albumin" name="albumin" step="0.1">
+                            </div>
+                            <div>
+                                <label for="fecalCalprotectin">Fecal Calprotectin (μg/g)</label>
+                                <input type="number" id="fecalCalprotectin" name="fecalCalprotectin">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="checkbox-label">
+                            <input type="checkbox" id="b12Deficiency" name="b12Deficiency">
+                            <label for="b12Deficiency">B12 Deficiency</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2 class="section-title">Colonoscopy Findings</h2>
+                    <div class="form-row">
+                        <label>Affected GI Areas</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-label">
+                                <input type="checkbox" id="areaRectum" name="affectedAreas" value="rectum">
+                                <label for="areaRectum">Rectum</label>
+                            </div>
+                            <div class="checkbox-label">
+                                <input type="checkbox" id="areaLeftColon" name="affectedAreas" value="left_colon">
+                                <label for="areaLeftColon">Left Colon</label>
+                            </div>
+                            <div class="checkbox-label">
+                                <input type="checkbox" id="areaTransverseColon" name="affectedAreas" value="transverse_colon">
+                                <label for="areaTransverseColon">Transverse Colon</label>
+                            </div>
+                            <div class="checkbox-label">
+                                <input type="checkbox" id="areaRightColon" name="affectedAreas" value="right_colon">
+                                <label for="areaRightColon">Right Colon</label>
+                            </div>
+                            <div class="checkbox-label">
+                                <input type="checkbox" id="areaTerminalIleum" name="affectedAreas" value="terminal_ileum">
+                                <label for="areaTerminalIleum">Terminal Ileum</label>
+                            </div>
+                            <div class="checkbox-label">
+                                <input type="checkbox" id="areaJejunum" name="affectedAreas" value="jejunum">
+                                <label for="areaJejunum">Jejunum</label>
+                            </div>
+                            <div class="checkbox-label">
+                                <input type="checkbox" id="areaUpperGI" name="affectedAreas" value="upper_gi">
+                                <label for="areaUpperGI">Upper GI</label>
+                            </div>
+                            <div class="checkbox-label">
+                                <input type="checkbox" id="areaPerianal" name="affectedAreas" value="perianal">
+                                <label for="areaPerianal">Perianal Area</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="checkbox-label">
+                            <input type="checkbox" id="rectalInvolvement" name="rectalInvolvement">
+                            <label for="rectalInvolvement">Rectal Involvement</label>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <label for="ulcerPattern">Ulcer Pattern</label>
+                        <select id="ulcerPattern" name="ulcerPattern">
+                            <option value="">Select...</option>
+                            <option value="continuous">Continuous</option>
+                            <option value="patchy">Patchy/Skip Lesions</option>
+                            <option value="none">No Ulcers Visible</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <label for="inflammationDepth">Inflammation Depth</label>
+                        <select id="inflammationDepth" name="inflammationDepth">
+                            <option value="">Select...</option>
+                            <option value="superficial">Superficial/Mucosal Only</option>
+                            <option value="transmural">Deep/Transmural</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2 class="section-title">Complications & Extraintestinal Manifestations</h2>
+                    <div class="checkbox-group">
+                        <div class="checkbox-label">
+                            <input type="checkbox" id="perianal" name="perianal">
+                            <label for="perianal">Perianal Disease</label>
+                        </div>
+                        <div class="checkbox-label">
+                            <input type="checkbox" id="fistula" name="fistula">
+                            <label for="fistula">Fistula</label>
+                        </div>
+                        <div class="checkbox-label">
+                            <input type="checkbox" id="stricture" name="stricture">
+                            <label for="stricture">Stricture</label>
+                        </div>
+                        <div class="checkbox-label">
+                            <input type="checkbox" id="arthritis" name="arthritis">
+                            <label for="arthritis">Arthritis</label>
+                        </div>
+                        <div class="checkbox-label">
+                            <input type="checkbox" id="erythemaNodosum" name="erythemaNodosum">
+                            <label for="erythemaNodosum">Erythema Nodosum</label>
+                        </div>
+                        <div class="checkbox-label">
+                            <input type="checkbox" id="pyodermaGangrenosum" name="pyodermaGangrenosum">
+                            <label for="pyodermaGangrenosum">Pyoderma Gangrenosum</label>
+                        </div>
+                        <div class="checkbox-label">
+                            <input type="checkbox" id="iritis" name="iritis">
+                            <label for="iritis">Iritis/Uveitis</label>
+                        </div>
+                        <div class="checkbox-label">
+                            <input type="checkbox" id="psc" name="psc">
+                            <label for="psc">PSC</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button id="calculateButton">Calculate Results</button>
+                    <button id="resetButton" class="secondary">Reset Form</button>
+                </div>
+            </div>
+
+            <!-- Right side - Results -->
+            <div class="results-container">
+                <h2 class="section-title">Results</h2>
+                
+                <div id="initialMessage">
+                    <p style="padding: 20px; text-align: center; color: #666;">Fill out the form and click "Calculate Results" to see diagnostic suggestions.</p>
+                </div>
+                
+                <div id="resultsContent" class="hidden">
+                    <div class="result-card diagnosis-result">
+                        <div class="result-title">Diagnostic Impression:</div>
+                        <div id="diagnosisResult">-</div>
+                        
+                        <div class="certainty-meter">
+                            <div class="meter-fill" id="certaintyMeter" style="width: 0%;"></div>
+                        </div>
+                        <div class="certainty-label">Certainty: <span id="certaintyValue">0</span>%</div>
+                    </div>
+                    
+                    <div class="score-container">
+                        <div class="score-box crohns-score">
+                            <div>Crohn's Score</div>
+                            <div class="score-value" id="crohnsScoreValue">0</div>
+                        </div>
+                        <div class="score-box uc-score">
+                            <div>UC Score</div>
+                            <div class="score-value" id="ucScoreValue">0</div>
+                        </div>
+                    </div>
+                    
+                    <div class="result-card severity-result">
+                        <div class="result-title">Disease Severity:</div>
+                        <div id="severityResult">-</div>
+                    </div>
+                    
+                    <div class="result-card treatment-result">
+                        <div class="result-title">Treatment Consideration:</div>
+                        <div id="treatmentResult">-</div>
+                    </div>
+                    
+                    <div style="margin-top: 30px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; font-size: 14px;">
+                        <p><strong>Disclaimer:</strong> This calculator is based on patterns presented in Dr. Schwartz's IBD lecture for PCPs and is meant for educational purposes only. It should not replace clinical judgment or specialist consultation. Results are approximations based on common features of IBD.</p>
+                    </div>
+                </div>
+                
+                <div class="loading-overlay" id="loadingOverlay">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+<script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Setup conditional display of form elements
+            const abdominalPainSelect = document.getElementById('abdominalPain');
+            const painLocationContainer = document.getElementById('painLocationContainer');
+            
+            abdominalPainSelect.addEventListener('change', function() {
+                if (this.value && this.value !== 'none') {
+                    painLocationContainer.style.display = 'block';
+                } else {
+                    painLocationContainer.style.display = 'none';
+                    // Clear checkboxes
+                    document.querySelectorAll('[name="painLocation"]').forEach(cb => cb.checked = false);
+                }
+            });
+            
+            const weightLossCheckbox = document.getElementById('weightLoss');
+            const weightLossAmountContainer = document.getElementById('weightLossAmountContainer');
+            
+            weightLossCheckbox.addEventListener('change', function() {
+                weightLossAmountContainer.style.display = this.checked ? 'block' : 'none';
+                if (!this.checked) {
+                    document.getElementById('weightLossAmount').value = '';
+                }
+            });
+            
+            // Get all form elements
+            const formElements = {
+                // Demographics
+                age: document.getElementById('age'),
+                sex: document.getElementById('sex'),
+                hasFirstDegreeRelative: document.getElementById('hasFirstDegreeRelative'),
+                smoking: document.getElementById('smoking'),
+                
+                // Symptoms
+                bloodyDiarrhea: document.getElementById('bloodyDiarrhea'),
+                tenesmus: document.getElementById('tenesmus'),
+                abdominalPain: document.getElementById('abdominalPain'),
+                painLocation: document.querySelectorAll('[name="painLocation"]'),
+                weightLoss: document.getElementById('weightLoss'),
+                weightLossAmount: document.getElementById('weightLossAmount'),
+                feverPresent: document.getElementById('feverPresent'),
+                
+                // Lab Values
+                hemoglobin: document.getElementById('hemoglobin'),
+                crp: document.getElementById('crp'),
+                albumin: document.getElementById('albumin'),
+                b12Deficiency: document.getElementById('b12Deficiency'),
+                fecalCalprotectin: document.getElementById('fecalCalprotectin'),
+                
+                // Colonoscopy Findings
+                affectedAreas: document.querySelectorAll('[name="affectedAreas"]'),
+                rectalInvolvement: document.getElementById('rectalInvolvement'),
+                ulcerPattern: document.getElementById('ulcerPattern'),
+                inflammationDepth: document.getElementById('inflammationDepth'),
+                
+                // Complications
+                perianal: document.getElementById('perianal'),
+                fistula: document.getElementById('fistula'),
+                stricture: document.getElementById('stricture'),
+                
+                // Extraintestinal
+                arthritis: document.getElementById('arthritis'),
+                erythemaNodosum: document.getElementById('erythemaNodosum'),
+                pyodermaGangrenosum: document.getElementById('pyodermaGangrenosum'),
+                iritis: document.getElementById('iritis'),
+                psc: document.getElementById('psc')
+            };
+            
+            // Get result elements
+            const resultElements = {
+                initialMessage: document.getElementById('initialMessage'),
+                resultsContent: document.getElementById('resultsContent'),
+                diagnosisResult: document.getElementById('diagnosisResult'),
+                certaintyMeter: document.getElementById('certaintyMeter'),
+                certaintyValue: document.getElementById('certaintyValue'),
+                crohnsScoreValue: document.getElementById('crohnsScoreValue'),
+                ucScoreValue: document.getElementById('ucScoreValue'),
+                severityResult: document.getElementById('severityResult'),
+                treatmentResult: document.getElementById('treatmentResult'),
+                loadingOverlay: document.getElementById('loadingOverlay')
+            };
+            
+            // Calculate button click handler
+            document.getElementById('calculateButton').addEventListener('click', function() {
+                // Show loading spinner
+                resultElements.loadingOverlay.style.display = 'flex';
+                
+                // Get form data
+                const formData = {
+                    age: formElements.age.value,
+                    sex: formElements.sex.value,
+                    hasFirstDegreeRelative: formElements.hasFirstDegreeRelative.checked,
+                    smoking: formElements.smoking.value,
+                    
+                    bloodyDiarrhea: formElements.bloodyDiarrhea.checked,
+                    tenesmus: formElements.tenesmus.checked,
+                    abdominalPain: formElements.abdominalPain.value,
+                    abdominalPainLocation: Array.from(formElements.painLocation)
+                        .filter(cb => cb.checked)
+                        .map(cb => cb.value),
+                    weightLoss: formElements.weightLoss.checked,
+                    weightLossAmount: formElements.weightLossAmount.value,
+                    feverPresent: formElements.feverPresent.checked,
+                    
+                    hemoglobin: formElements.hemoglobin.value,
+                    crp: formElements.crp.value,
+                    albumin: formElements.albumin.value,
+                    b12Deficiency: formElements.b12Deficiency.checked,
+                    fecalCalprotectin: formElements.fecalCalprotectin.value,
+                    
+                    affectedAreas: Array.from(formElements.affectedAreas)
+                        .filter(cb => cb.checked)
+                        .map(cb => cb.value),
+                    rectalInvolvement: formElements.rectalInvolvement.checked,
+                    ulcerPattern: formElements.ulcerPattern.value,
+                    inflammationDepth: formElements.inflammationDepth.value,
+                    
+                    perianal: formElements.perianal.checked,
+                    fistula: formElements.fistula.checked,
+                    stricture: formElements.stricture.checked,
+                    
+                    arthritis: formElements.arthritis.checked,
+                    erythemaNodosum: formElements.erythemaNodosum.checked,
+                    pyodermaGangrenosum: formElements.pyodermaGangrenosum.checked,
+                    iritis: formElements.iritis.checked,
+                    psc: formElements.psc.checked
+                };
+                
+                // Simulate calculation delay
+                setTimeout(() => {
+                    calculateResults(formData);
+                    
+                    // Hide loading spinner
+                    resultElements.loadingOverlay.style.display = 'none';
+                    
+                    // Show results
+                    resultElements.initialMessage.style.display = 'none';
+                    resultElements.resultsContent.classList.remove('hidden');
+                }, 1000);
+            });
+            
+            // Reset button click handler
+            document.getElementById('resetButton').addEventListener('click', function() {
+                // Reset form
+                document.querySelectorAll('input[type="text"], input[type="number"]').forEach(input => {
+                    input.value = '';
+                });
+                
+                document.querySelectorAll('select').forEach(select => {
+                    select.selectedIndex = 0;
+                });
+                
+                document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                
+                // Reset conditional display containers
+                painLocationContainer.style.display = 'none';
+                weightLossAmountContainer.style.display = 'none';
+                
+                // Reset results
+                resultElements.initialMessage.style.display = 'block';
+                resultElements.resultsContent.classList.add('hidden');
+            });
+            
+            // Function to calculate results
+            function calculateResults(formData) {
+                // Calculate Crohn's score
+                let crohnsScore = 0;
+                
+                // Demographic factors
+                if (formData.age < 30) crohnsScore += 1;
+                if (formData.hasFirstDegreeRelative) crohnsScore += 2;
+                if (formData.smoking === 'current') crohnsScore += 3;
+                if (formData.smoking === 'former') crohnsScore += 1;
+                
+                // Symptoms more typical of Crohn's
+                if (formData.abdominalPain === 'severe') crohnsScore += 3;
+                if (formData.abdominalPain === 'moderate') crohnsScore += 2;
+                if (formData.abdominalPain === 'mild') crohnsScore += 1;
+                if (formData.abdominalPainLocation.includes('right_lower')) crohnsScore += 3;
+                if (formData.weightLoss) crohnsScore += 2;
+                if (formData.weightLossAmount > 10) crohnsScore += 2;
+                if (!formData.bloodyDiarrhea) crohnsScore += 2; // Less common in Crohn's
+                if (formData.feverPresent) crohnsScore += 1;
+                
+                // Lab values
+                if (formData.b12Deficiency) crohnsScore += 2;
+                if (formData.albumin < 3.5) crohnsScore += 1;
+                
+                // Distribution
+                if (formData.affectedAreas.includes('terminal_ileum')) crohnsScore += 4;
+                if (formData.affectedAreas.includes('jejunum')) crohnsScore += 4;
+                if (formData.affectedAreas.includes('upper_gi')) crohnsScore += 4;
+                if (!formData.rectalInvolvement) crohnsScore += 2;
+                if (formData.affectedAreas.includes('perianal')) crohnsScore += 4;
+                
+                // Endoscopic findings
+                if (formData.ulcerPattern === 'patchy') crohnsScore += 3;
+                if (formData.inflammationDepth === 'transmural') crohnsScore += 4;
+                
+                // Complications
+                if (formData.perianal) crohnsScore += 4;
+                if (formData.fistula) crohnsScore += 4;
+                if (formData.stricture) crohnsScore += 3;
+                
+                // Calculate UC score
+                let ucScore = 0;
+                
+                // Demographic factors
+                if (formData.smoking === 'former') ucScore += 3; // Quitting can trigger UC
+                if (formData.smoking === 'never') ucScore += 1;
+                
+                // Symptoms more typical of UC
+                if (formData.bloodyDiarrhea) ucScore += 4;
+                if (formData.tenesmus) ucScore += 3;
+                
+                // Distribution
+                if (formData.affectedAreas.includes('rectum')) ucScore += 3;
+                if (formData.affectedAreas.includes('left_colon')) ucScore += 2;
+                if (formData.rectalInvolvement) ucScore += 3;
+                if (formData.affectedAreas.length === 1 && formData.affectedAreas.includes('rectum')) ucScore += 2;
+                
+                // Endoscopic findings
+                if (formData.ulcerPattern === 'continuous') ucScore += 4;
+                if (formData.inflammationDepth === 'superficial') ucScore += 3;
+                
+                // Calculate total scores
+                const totalCrohnsScore = crohnsScore;
+                const totalUCScore = ucScore;
+                
+                // Determine severity based on symptoms, complications, and lab values
+                let severity = 'Mild';
+                if (
+                    formData.weightLoss || 
+                    formData.feverPresent || 
+                    (formData.hemoglobin && formData.hemoglobin < 10) ||
+                    formData.fistula ||
+                    formData.stricture ||
+                    (formData.fecalCalprotectin && formData.fecalCalprotectin > 500) ||
+                    (formData.crp && formData.crp > 10)
+                ) {
+                    severity = 'Moderate-to-Severe';
+                }
+                
+                if (
+                    (formData.weightLossAmount && formData.weightLossAmount > 15) ||
+                    (formData.hemoglobin && formData.hemoglobin < 8) ||
+                    (formData.albumin && formData.albumin < 2.5)
+                ) {
+                    severity = 'Severe';
+                }
+                
+                // Determine diagnosis based on scores
+                let diagnosis;
+                let certainty = 0;
+                
+                if (totalCrohnsScore > totalUCScore) {
+                    diagnosis = "Crohn's Disease";
+                    certainty = Math.min(100, Math.round((totalCrohnsScore / (totalCrohnsScore + totalUCScore)) * 100));
+                } else if (totalUCScore > totalCrohnsScore) {
+                    diagnosis = "Ulcerative Colitis";
+                    certainty = Math.min(100, Math.round((totalUCScore / (totalCrohnsScore + totalUCScore)) * 100));
+                } else {
+                    diagnosis = "Indeterminate Colitis";
+                    certainty = 50;
+                }
+                
+                // Adjust certainty - if clear evidence of Crohn's is present
+                if (formData.fistula || formData.stricture || formData.perianal || 
+                    formData.affectedAreas.includes('terminal_ileum') && formData.affectedAreas.includes('perianal')) {
+                    diagnosis = "Crohn's Disease";
+                    certainty = Math.min(100, certainty + 20);
+                }
+                
+                // If rectal involvement with continuous inflammation and only colon involved
+                if (formData.rectalInvolvement && formData.ulcerPattern === 'continuous' && 
+                    !formData.affectedAreas.some(area => ['terminal_ileum', 'jejunum', 'upper_gi', 'perianal'].includes(area))) {
+                    diagnosis = "Ulcerative Colitis";
+                    certainty = Math.min(100, certainty + 20);
+                }
+
+                // Generate treatment recommendation based on diagnosis and severity
+                let treatmentRecommendation;
+                
+                if (diagnosis === "Crohn's Disease") {
+                    if (severity === 'Mild') {
+                        treatmentRecommendation = "Consider: Budesonide for mild ileal Crohn's or mesalamine for mild colonic Crohn's. Monitor closely for response. Consider escalation if no improvement in 4-8 weeks.";
+                    } else if (severity === 'Moderate-to-Severe') {
+                        treatmentRecommendation = "Recommend biological therapy (anti-TNF, anti-integrin, or anti-IL12/23). Consider combination therapy with immunomodulator in high-risk patients. Systemic steroids may be needed for acute flare.";
+                    } else {
+                        treatmentRecommendation = "Urgent referral to gastroenterology. May require hospitalization, IV steroids, and expedited biological therapy. Surgical consultation if obstruction, abscess, or perforation.";
+                    }
+                } else if (diagnosis === "Ulcerative Colitis") {
+                    if (severity === 'Mild') {
+                        treatmentRecommendation = "5-ASA/mesalamine therapy (oral and/or topical depending on extent). Consider adding rectal therapy if distal disease.";
+                    } else if (severity === 'Moderate-to-Severe') {
+                        treatmentRecommendation = "Biological therapy (anti-TNF, anti-integrin, or JAK inhibitor). Systemic steroids for acute flare. Consider combination therapy with immunomodulator.";
+                    } else {
+                        treatmentRecommendation = "Urgent referral to gastroenterology. Likely requires hospitalization and IV steroids. If no improvement, consider early biologic therapy or colectomy.";
+                    }
+                } else {
+                    treatmentRecommendation = "Refer to gastroenterology for further evaluation with colonoscopy, imaging, and histology. Treatment will depend on predominant features and symptom presentation.";
+                }
+                
+                // Update results display
+                resultElements.diagnosisResult.textContent = diagnosis;
+                resultElements.certaintyMeter.style.width = certainty + '%';
+                resultElements.certaintyValue.textContent = certainty;
+                resultElements.crohnsScoreValue.textContent = totalCrohnsScore;
+                resultElements.ucScoreValue.textContent = totalUCScore;
+                resultElements.severityResult.textContent = severity;
+                resultElements.treatmentResult.textContent = treatmentRecommendation;
+            }
+        });
+    </script>
+</body>
+</html>
