@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IBD for the PCP Concept Map</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f8f9fa;
+      overflow: hidden;
+      touch-action: none; /* Prevents browser handling of touch events */
+    }
+
+    #concept-map-container {
+      width: 100%;
+      height: 100vh;
+      position: relative;
+      cursor: move;
+    }
+
+    .concept {
+      position: absolute;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+      color: white;
+      font-weight: bold;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      z-index: 10;
+    }
+
+    .center-concept {
+      background-color: #9c27b0;
+      width: 160px;
+      height: 160px;
+      font-size: 18px;
+      z-index: 20;
+    }
+
+    .primary-concept {
+      background-color: #3f51b5;
+      width: 120px;
+      height: 120px;
+      font-size: 14px;
+    }
+
+    .secondary-concept {
+      background-color: #03a9f4;
+      width: 90px;
+      height: 90px;
+      font-size: 12px;
+    }
+
+    .tertiary-concept {
+      background-color: #4caf50;
+      width: 70px;
+      height: 70px;
+      font-size: 11px;
+    }
+
+    .concept:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .connection {
+      position: absolute;
+      background-color: #7986cb;
+      z-index: 5;
+      transform-origin: left center;
+    }
+
+    .thick-connection {
+      height: 4px;
+    }
+
+    .medium-connection {
+      height: 3px;
+    }
+
+    .thin-connection {
+      height: 2px;
+    }
+
+    #tooltip {
+      position: absolute;
+      display: none;
+      background-color: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 14px;
+      max-width: 300px;
+      z-index: 100;
+    }
+
+    #detail-panel {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 300px;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      padding: 20px;
+      display: none;
+      z-index: 30;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    #detail-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    #detail-content {
+      font-size: 14px;
+      line-height: 1.5;
+      color: #555;
+    }
+
+    #detail-close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 20px;
+      height: 20px;
+      text-align: center;
+      line-height: 20px;
+      cursor: pointer;
+      font-weight: bold;
+      color: #999;
+    }
+
+    #detail-close:hover {
+      color: #333;
+    }
+
+    .fact-list {
+      margin-top: 10px;
+    }
+
+    .fact-item {
+      background-color: #f5f5f5;
+      padding: 8px;
+      border-radius: 5px;
+      margin-bottom: 5px;
+      font-size: 13px;
+    }
+
+    .relationship-list {
+      margin-top: 15px;
+    }
+
+    .relationship-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .relationship-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+
+    h2 {
+      margin-top: 20px;
+      margin-bottom: 10px;
+      font-size: 16px;
+      color: #333;
+    }
+
+    #title-overlay {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 10px 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      z-index: 25;
+    }
+
+    #instructions {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 10px 15px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      font-size: 14px;
+      color: #555;
+      z-index: 25;
+      max-width: 250px;
+    }
+
+    #main-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #333;
+      margin: 0;
+    }
+
+    #subtitle {
+      font-size: 14px;
+      color: #666;
+      margin: 5px 0 0 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="concept-map-container"></div>
+
+  <div id="tooltip"></div>
+
+  <div id="detail-panel">
+    <div id="detail-close">×</div>
+    <div id="detail-title"></div>
+    <div id="detail-content"></div>
+  </div>
+
+  <div id="title-overlay">
+    <h1 id="main-title">IBD for the Primary Care Provider</h1>
+    <p id="subtitle">Interactive Mind Map</p>
+  </div>
+
+  <script>
+    // =========================
+    // DEFINE CONCEPTS & NODES
+    // =========================
+
+    // Center Concept
+    const centerConcept = {
+      id: "ibd-overview",
+      name: "INFLAMMATORY\nBOWEL DISEASE",
+      type: "center-concept",
+      description: "Chronic inflammatory conditions affecting the gastrointestinal tract with significant clinical implications",
+      facts: [
+        "Affects approximately 3 million patients in the US (about 1% of population)",
+        "Includes Ulcerative Colitis and Crohn's Disease",
+        "Requires lifelong management with multidisciplinary approach",
+        "Often under-diagnosed due to subtle or absent symptoms in many cases"
+      ]
+    };
+
+    // PRIMARY Concepts
+    const primaryConcepts = [
+      {
+        id: "disease-background",
+        name: "Background &\nEpidemiology",
+        type: "primary-concept",
+        angle: 0,
+        distance: 200,
+        connectionType: "thick-connection",
+        description: "Disease prevalence, pathophysiology, and contributing factors",
+        facts: [
+          "Approximately 3 million IBD patients in the US",
+          "About 30,000 new cases per year",
+          "More common in developed countries with good sanitation",
+          "Pathophysiology involves genetics, immune dysregulation, and environmental triggers"
+        ],
+        relationships: []
+      },
+      {
+        id: "uc-overview",
+        name: "Ulcerative\nColitis",
+        type: "primary-concept",
+        angle: 60,
+        distance: 200,
+        connectionType: "thick-connection",
+        description: "Continuous inflammation of the colon with consistent presentation and progression",
+        facts: [
+          "Presents with bloody diarrhea and tenesmus",
+          "Inflammation is superficial and continuous",
+          "Always involves the rectum",
+          "Long-term concern is colorectal cancer risk"
+        ],
+        relationships: []
+      },
+      {
+        id: "crohns-overview",
+        name: "Crohn's\nDisease",
+        type: "primary-concept",
+        angle: 120,
+        distance: 200,
+        connectionType: "thick-connection",
+        description: "Patchy inflammation that can affect any part of the GI tract, often asymptomatic",
+        facts: [
+          "Terminal ileum affected in about 80% of cases",
+          "Often asymptomatic until complications occur",
+          "Presents with obstruction or perforation in 25-50% of cases",
+          "Can involve deeper tissues (transmural inflammation)"
+        ],
+        relationships: []
+      },
+      {
+        id: "diagnosis-testing",
+        name: "Diagnostic\nTesting",
+        type: "primary-concept",
+        angle: 180,
+        distance: 200,
+        connectionType: "thick-connection",
+        description: "Gold standard and supportive testing for IBD diagnosis and monitoring",
+        facts: [
+          "Colonoscopy is the gold standard for diagnosis",
+          "Fecal calprotectin useful as non-invasive biomarker",
+          "CRP is useful but one-third of patients don't produce it",
+          "Lab abnormalities may include low B12, low albumin, anemia"
+        ],
+        relationships: []
+      },
+      {
+        id: "extraintestinal",
+        name: "Extraintestinal\nManifestations",
+        type: "primary-concept",
+        angle: 240,
+        distance: 200,
+        connectionType: "thick-connection",
+        description: "Symptoms and conditions outside the GI tract related to IBD",
+        facts: [
+          "Arthritis is the most common extraintestinal manifestation",
+          "Dermatologic findings include erythema nodosum and pyoderma gangrenosum",
+          "Primary sclerosing cholangitis strongly associated with IBD",
+          "Eye inflammation such as episcleritis and uveitis can occur"
+        ],
+        relationships: []
+      },
+      {
+        id: "healthcare-maintenance",
+        name: "Healthcare\nMaintenance",
+        type: "primary-concept",
+        angle: 300,
+        distance: 200,
+        connectionType: "thick-connection",
+        description: "Preventive care and screening considerations for IBD patients",
+        facts: [
+          "Cancer screening guidelines recommend colonoscopy every 1-5 years based on risk",
+          "Vaccinations should be given earlier than general population",
+          "Live vaccines require temporary stopping of immunosuppression",
+          "Consider earlier DEXA scans due to steroid exposure and nutritional concerns"
+        ],
+        relationships: []
+      },
+      {
+        id: "treatment-management",
+        name: "Treatment &\nManagement",
+        type: "primary-concept",
+        angle: 360,
+        distance: 200,
+        connectionType: "thick-connection",
+        description: "Treatment approaches and management strategies for IBD patients",
+        facts: [
+          "Biologics and other drugs are most effective when taken consistently",
+          "All IBD meds only work in about 50% of patients",
+          "Medications take about 3 months to show effectiveness",
+          "Steroids and opiates carry highest risk ratio for IBD patients"
+        ],
+        relationships: []
+      }
+    ];
+
+    // SECONDARY Concepts
+    const secondaryConcepts = [
+      {
+        id: "genetic-environmental",
+        name: "Genetic &\nEnvironmental",
+        type: "secondary-concept",
+        parentId: "disease-background",
+        angle: 30,
+        distance: 140,
+        connectionType: "medium-connection",
+        description: "Interplay of genetic susceptibility and environmental factors in IBD development",
+        facts: [
+          "Over 200 genes identified with NOD2 explaining 5-10% of risk",
+          "Genetics explain less than 1/3 of IBD risk",
+          "Hygiene hypothesis: clean environments increase autoimmune risk",
+          "Smoking worsens Crohn's but oddly improves ulcerative colitis"
+        ]
+      },
+      {
+        id: "uc-presentation",
+        name: "UC\nPresentation",
+        type: "secondary-concept",
+        parentId: "uc-overview",
+        angle: 90,
+        distance: 140,
+        connectionType: "medium-connection",
+        description: "Clinical presentation and key features of ulcerative colitis",
+        facts: [
+          "Bloody diarrhea and tenesmus (crampy rectal discomfort)",
+          "Rarely asymptomatic - symptoms are obvious",
+          "Continuous inflammation from rectum upward",
+          "Differential includes infection (most common alternative)"
+        ]
+      },
+      {
+        id: "crohns-complications",
+        name: "Crohn's\nComplications",
+        type: "secondary-concept",
+        parentId: "crohns-overview",
+        angle: 150,
+        distance: 140,
+        connectionType: "medium-connection",
+        description: "Common complications that occur with Crohn's disease progression",
+        facts: [
+          "Small bowel obstruction due to strictures",
+          "Fistulas connecting bowel to other organs or skin",
+          "Abscesses requiring drainage",
+          "Often asymptomatic for 5-15 years before complications"
+        ]
+      },
+      {
+        id: "inflammatory-markers",
+        name: "Lab & Markers",
+        type: "secondary-concept",
+        parentId: "diagnosis-testing",
+        angle: 150,
+        distance: 140,
+        connectionType: "medium-connection",
+        description: "Blood tests and stool markers used in IBD diagnosis and monitoring",
+        facts: [
+          "Fecal calprotectin most accurate non-invasive test",
+          "CRP useful but 1/3 of patients don't produce it",
+          "Sed rate not well-correlated with IBD activity",
+          "Check B12, albumin, hemoglobin at diagnosis and follow-up"
+        ]
+      },
+      {
+        id: "radiologic-testing",
+        name: "Imaging\nOptions",
+        type: "secondary-concept",
+        parentId: "diagnosis-testing",
+        angle: 210,
+        distance: 140,
+        connectionType: "medium-connection",
+        description: "Imaging modalities used to diagnose and monitor IBD",
+        facts: [
+          "CT with enterography protocol best for small bowel",
+          "MRE useful to reduce radiation but less available",
+          "Capsule endoscopy can detect subtle inflammation",
+          "Small bowel follow-through becoming antiquated"
+        ]
+      },
+      {
+        id: "skin-manifestations",
+        name: "Skin\nManifestations",
+        type: "secondary-concept",
+        parentId: "extraintestinal",
+        angle: 210,
+        distance: 140,
+        connectionType: "medium-connection",
+        description: "Dermatologic conditions associated with IBD",
+        facts: [
+          "Erythema nodosum: painful red nodules often on legs",
+          "Pyoderma gangrenosum: destructive ulcers with purple undermined edges",
+          "Oral aphthous ulcers can occur in both UC and Crohn's",
+          "Most skin manifestations improve when gut disease is treated"
+        ]
+      },
+      {
+        id: "cancer-screening",
+        name: "Cancer\nScreening",
+        type: "secondary-concept",
+        parentId: "healthcare-maintenance",
+        angle: 270,
+        distance: 140,
+        connectionType: "medium-connection",
+        description: "Colorectal cancer surveillance in IBD patients",
+        facts: [
+          "Risk stratification: high risk (PSC) yearly, moderate risk every 3 years, remission every 5 years",
+          "Old notion of 1% risk per year after 10 years is outdated",
+          "Modern data shows approximately 2x general population risk",
+          "Well-controlled disease likely has risk similar to general population"
+        ]
+      },
+      {
+        id: "vaccination",
+        name: "Vaccination\nGuidelines",
+        type: "secondary-concept",
+        parentId: "healthcare-maintenance",
+        angle: 330,
+        distance: 140,
+        connectionType: "medium-connection",
+        description: "Special vaccination considerations for IBD patients",
+        facts: [
+          "Non-live vaccines same as general population but often earlier",
+          "Pneumococcal and herpes zoster at age 19 instead of 60",
+          "Live vaccines (MMR, varicella, yellow fever) require temporary stopping of immunosuppression",
+          "Insurance coverage issues may arise for early vaccines"
+        ]
+      },
+      {
+        id: "diet-therapy",
+        name: "Diet &\nNutrition",
+        type: "secondary-concept",
+        parentId: "treatment-management",
+        angle: 30,
+        distance: 140,
+        connectionType: "medium-connection",
+        description: "Dietary approaches and considerations in IBD management",
+        facts: [
+          "Mediterranean diet has best evidence for IBD",
+          "Enteral nutrition (formula diets) effective especially in kids",
+          "Diet affects symptoms more than inflammation in most cases",
+          "Low FODMAP may help IBS symptoms that coexist with IBD"
+        ]
+      }
+    ];
+
+    // TERTIARY Concepts
+    const tertiaryConcepts = [
+      {
+        id: "ileal-crohns",
+        name: "Ileal\nCrohn's",
+        type: "tertiary-concept",
+        parentId: "crohns-overview",
+        angle: 90,
+        distance: 110,
+        connectionType: "thin-connection",
+        description: "Characteristics of Crohn's disease affecting the terminal ileum",
+        facts: [
+          "Affects 80% of Crohn's patients",
+          "Often asymptomatic until strictures develop",
+          "Can present as suspected appendicitis",
+          "May cause malabsorption of B12 and bile acids"
+        ]
+      },
+      {
+        id: "hospitalized-patients",
+        name: "Hospital\nManagement",
+        type: "tertiary-concept",
+        parentId: "treatment-management",
+        angle: 330,
+        distance: 110,
+        connectionType: "thin-connection",
+        description: "Management strategies for hospitalized IBD patients",
+        facts: [
+          "'Crohn's flare' is usually something else (infection, obstruction, abscess)",
+          "Always rule out C. diff in patients with diarrhea",
+          "DVT prophylaxis important even with bloody diarrhea",
+          "Steroids can be started if no major infection is present"
+        ]
+      },
+      {
+        id: "ibs-comorbidity",
+        name: "IBS\nComorbidity",
+        type: "tertiary-concept",
+        parentId: "crohns-complications",
+        angle: 120,
+        distance: 110,
+        connectionType: "thin-connection",
+        description: "Overlap of irritable bowel syndrome with IBD",
+        facts: [
+          "15-25% of IBD patients also have IBS, similar to general population",
+          "IBS symptoms often mistaken for IBD activity",
+          "Nortriptyline and similar agents can help IBS symptoms in IBD patients",
+          "Important to distinguish symptoms from inflammation"
+        ]
+      },
+      {
+        id: "skin-cancer",
+        name: "Skin Cancer\nRisk",
+        type: "tertiary-concept",
+        parentId: "cancer-screening",
+        angle: 240,
+        distance: 110,
+        connectionType: "thin-connection",
+        description: "Skin cancer screening for IBD patients on immunosuppression",
+        facts: [
+          "Guidelines recommend annual skin checks for all immunosuppressed IBD patients",
+          "Risk varies by medication: thiopurines have higher risk than biologics",
+          "Age-based approach more practical: start at 50 for most, 30 for combination therapy",
+          "Risk-benefit ratio unfavorable for annual exams in younger patients"
+        ]
+      }
+    ];
+
+    // ===================================
+    // REUSABLE FUNCTIONS & MAP CREATION
+    // ===================================
+
+    // Main function to initialize the concept map
+    function initializeConceptMap() {
+      const container = document.getElementById('concept-map-container');
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+
+      // Create center concept
+      createConcept(centerConcept, centerX, centerY);
+
+      // Create primary concepts
+      primaryConcepts.forEach(concept => {
+        const angleRad = concept.angle * (Math.PI / 180);
+        const x = centerX + Math.cos(angleRad) * concept.distance;
+        const y = centerY + Math.sin(angleRad) * concept.distance;
+
+        createConcept(concept, x, y);
+        createConnection(centerX, centerY, x, y, concept.connectionType, concept.angle);
+      });
+
+      // Create secondary concepts
+      secondaryConcepts.forEach(concept => {
+        const parent = primaryConcepts.find(p => p.id === concept.parentId);
+        if (parent) {
+          const parentAngleRad = parent.angle * (Math.PI / 180);
+          const parentX = centerX + Math.cos(parentAngleRad) * parent.distance;
+          const parentY = centerY + Math.sin(parentAngleRad) * parent.distance;
+
+          const angleRad = concept.angle * (Math.PI / 180);
+          const x = parentX + Math.cos(angleRad) * concept.distance;
+          const y = parentY + Math.sin(angleRad) * concept.distance;
+
+          createConcept(concept, x, y);
+          createConnection(parentX, parentY, x, y, concept.connectionType, concept.angle);
+        }
+      });
+
+      // Create tertiary concepts
+      tertiaryConcepts.forEach(concept => {
+        let parentX, parentY;
+        const parent = secondaryConcepts.find(p => p.id === concept.parentId);
+        
+        if (parent) {
+          const grandParent = primaryConcepts.find(p => p.id === parent.parentId);
+          if (grandParent) {
+            const grandParentAngleRad = grandParent.angle * (Math.PI / 180);
+            const grandParentX = centerX + Math.cos(grandParentAngleRad) * grandParent.distance;
+            const grandParentY = centerY + Math.sin(grandParentAngleRad) * grandParent.distance;
+
+            const parentAngleRad = parent.angle * (Math.PI / 180);
+            parentX = grandParentX + Math.cos(parentAngleRad) * parent.distance;
+            parentY = grandParentY + Math.sin(parentAngleRad) * parent.distance;
+          }
+        } else {
+          // If parent is a primary concept, not a secondary concept
+          const primaryParent = primaryConcepts.find(p => p.id === concept.parentId);
+          if (primaryParent) {
+            const parentAngleRad = primaryParent.angle * (Math.PI / 180);
+            parentX = centerX + Math.cos(parentAngleRad) * primaryParent.distance;
+            parentY = centerY + Math.sin(parentAngleRad) * primaryParent.distance;
+          }
+        }
+
+        if (parentX && parentY) {
+          const angleRad = concept.angle * (Math.PI / 180);
+          const x = parentX + Math.cos(angleRad) * concept.distance;
+          const y = parentY + Math.sin(angleRad) * concept.distance;
+
+          createConcept(concept, x, y);
+          createConnection(parentX, parentY, x, y, concept.connectionType, concept.angle);
+        }
+      });
+    }
+
+    // Function to create a concept node
+    function createConcept(concept, x, y) {
+      const conceptElement = document.createElement('div');
+      conceptElement.className = `concept ${concept.type}`;
+      conceptElement.id = concept.id;
+      conceptElement.textContent = concept.name;
+      conceptElement.style.left = `${x - (conceptElement.offsetWidth || 120) / 2}px`;
+      conceptElement.style.top = `${y - (conceptElement.offsetHeight || 120) / 2}px`;
+
+      // Add event listeners
+      conceptElement.addEventListener('mouseover', (e) => {
+        e.stopPropagation(); // Prevent drag while interacting with nodes
+        showTooltip(concept, e);
+      });
+      conceptElement.addEventListener('mouseout', hideTooltip);
+      conceptElement.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent drag while clicking nodes
+        showDetails(concept);
+      });
+
+      // Add touch event handlers
+      conceptElement.addEventListener('touchstart', (e) => {
+        e.stopPropagation();
+      });
+      conceptElement.addEventListener('touchend', (e) => {
+        e.stopPropagation();
+        showDetails(concept);
+        hideTooltip();
+      });
+
+      document.getElementById('concept-map-container').appendChild(conceptElement);
+
+      // Update position after appending to account for actual size
+      setTimeout(() => {
+        conceptElement.style.left = `${x - conceptElement.offsetWidth / 2}px`;
+        conceptElement.style.top = `${y - conceptElement.offsetHeight / 2}px`;
+      }, 0);
+
+      return conceptElement;
+    }
+
+    // Function to create connection lines between concepts
+    function createConnection(x1, y1, x2, y2, type, angle) {
+      const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+      const angleRad = Math.atan2(y2 - y1, x2 - x1);
+
+      const connection = document.createElement('div');
+      connection.className = `connection ${type}`;
+      connection.style.width = `${length}px`;
+      connection.style.left = `${x1}px`;
+      connection.style.top = `${y1}px`;
+      connection.style.transform = `rotate(${angleRad}rad)`;
+
+      document.getElementById('concept-map-container').appendChild(connection);
+    }
+
+    // Function to show tooltip on hover
+    function showTooltip(concept, event) {
+      const tooltip = document.getElementById('tooltip');
+      tooltip.textContent = concept.description;
+      tooltip.style.left = `${event.pageX + 15}px`;
+      tooltip.style.top = `${event.pageY + 15}px`;
+      tooltip.style.display = 'block';
+    }
+
+    // Function to hide tooltip
+    function hideTooltip() {
+      document.getElementById('tooltip').style.display = 'none';
+    }
+
+    // Function to show concept details in side panel
+    function showDetails(concept) {
+      const detailPanel = document.getElementById('detail-panel');
+      const detailTitle = document.getElementById('detail-title');
+      const detailContent = document.getElementById('detail-content');
+
+      detailTitle.textContent = concept.name;
+
+      // Create content with description and facts
+      let content = `<p>${concept.description}</p>`;
+
+      // Add facts
+      if (concept.facts && concept.facts.length > 0) {
+        content += `<h2>Key Facts</h2><div class="fact-list">`;
+        concept.facts.forEach(fact => {
+          content += `<div class="fact-item">• ${fact}</div>`;
+        });
+        content += `</div>`;
+      }
+
+      // Add relationships if they exist
+      if (concept.relationships && concept.relationships.length > 0) {
+        content += `<h2>Relationships</h2><div class="relationship-list">`;
+        concept.relationships.forEach(rel => {
+          const allConcepts = [...primaryConcepts, ...secondaryConcepts, ...tertiaryConcepts, centerConcept];
+          const relatedConcept = allConcepts.find(c => c.id === rel.to);
+          if (relatedConcept) {
+            let color;
+            switch (relatedConcept.type) {
+              case "primary-concept":
+                color = "#3f51b5";
+                break;
+              case "secondary-concept":
+                color = "#03a9f4";
+                break;
+              case "tertiary-concept":
+                color = "#4caf50";
+                break;
+              default:
+                color = "#9c27b0";
+                break;
+            }
+            content += `
+              <div class="relationship-item">
+                <div class="relationship-dot" style="background-color: ${color}"></div>
+                <span><b>${relatedConcept.name}</b>: ${rel.description}</span>
+              </div>`;
+          }
+        });
+        content += `</div>`;
+      }
+
+      detailContent.innerHTML = content;
+      detailPanel.style.display = 'block';
+    }
+
+    // Close detail panel
+    document.getElementById('detail-close').addEventListener('click', () => {
+      document.getElementById('detail-panel').style.display = 'none';
+    });
+
+    // ===================================
+    // DRAG / PAN FUNCTIONALITY
+    // ===================================
+    let isDragging = false;
+    let startX, startY;
+    let offsetX = 0, offsetY = 0;
+    let currentX = 0, currentY = 0;
+
+    function handleDragStart(e) {
+      // Don't drag if clicking on a concept node
+      if (e.target.classList.contains('concept')) return;
+
+      isDragging = true;
+
+      if (e.type === 'mousedown') {
+        startX = e.clientX;
+        startY = e.clientY;
+        e.preventDefault();
+      } else if (e.type === 'touchstart') {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+      }
+
+      document.getElementById('concept-map-container').style.cursor = 'grabbing';
+    }
+
+    function handleDrag(e) {
+      if (!isDragging) return;
+
+      let currentClientX, currentClientY;
+
+      if (e.type === 'mousemove') {
+        currentClientX = e.clientX;
+        currentClientY = e.clientY;
+        e.preventDefault();
+      } else if (e.type === 'touchmove') {
+        currentClientX = e.touches[0].clientX;
+        currentClientY = e.touches[0].clientY;
+        e.preventDefault();
+      }
+
+      const deltaX = currentClientX - startX;
+      const deltaY = currentClientY - startY;
+
+      currentX = offsetX + deltaX;
+      currentY = offsetY + deltaY;
+
+      const container = document.getElementById('concept-map-container');
+      container.style.transform = `translate(${currentX}px, ${currentY}px)`;
+    }
+
+    function handleDragEnd() {
+      if (!isDragging) return;
+
+      isDragging = false;
+      offsetX = currentX;
+      offsetY = currentY;
+      document.getElementById('concept-map-container').style.cursor = 'move';
+    }
+
+    // Initialize the concept map when the page loads
+    window.addEventListener('load', () => {
+      initializeConceptMap();
+
+      const container = document.getElementById('concept-map-container');
+      container.addEventListener('mousedown', handleDragStart);
+      window.addEventListener('mousemove', handleDrag);
+      window.addEventListener('mouseup', handleDragEnd);
+
+      container.addEventListener('touchstart', handleDragStart, { passive: false });
+      window.addEventListener('touchmove', handleDrag, { passive: false });
+      window.addEventListener('touchend', handleDragEnd);
+    });
+
+    // Handle window resize (rebuild map)
+    window.addEventListener('resize', () => {
+      offsetX = 0;
+      offsetY = 0;
+      currentX = 0;
+      currentY = 0;
+      document.getElementById('concept-map-container').innerHTML = '';
+      document.getElementById('concept-map-container').style.transform = '';
+      initializeConceptMap();
+    });
+  </script>
+</body>
+</html>
